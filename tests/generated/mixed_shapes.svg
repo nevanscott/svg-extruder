@@ -9,22 +9,5 @@
     Z" fill="purple" stroke="black" />
       <polygon points="40,10 90,35 60,50 10,25" fill="orange" stroke="black" />
 <ellipse cx="90" cy="75" rx="25" ry="12.5" fill="purple" stroke="black"></ellipse>
-      <g>
-      <!-- Pink bounding box with border -->
-      <rect x="10" y="10" width="80" height="60" 
-            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
-      <!-- Text for distance -->
-      <text x="15" y="65" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
-        70.00
-      </text>
-    </g>
-<g>
-      <!-- Pink bounding box with border -->
-      <rect x="65" y="62.5" width="50" height="45" 
-            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
-      <!-- Text for distance -->
-      <text x="70" y="102.5" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
-        107.50
-      </text>
-    </g>
+      
     </svg>

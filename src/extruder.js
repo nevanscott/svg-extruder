@@ -3,31 +3,43 @@ import { JSDOM } from "jsdom";
 import { extrudeRectangle } from "./extrudeRectangle.js";
 import { extrudeCircle } from "./extrudeCircle.js";
 
-// Updated helper to display "distance" in debug boxes
+// Debug Mode
+const DEBUG = process.argv.includes("--debug"); // Pass --debug flag to enable debugging
+
+// Constants for Configuration
+const PADDING = 10;
+const DEBUG_BOX_FILL = "pink";
+const DEBUG_BOX_OPACITY = 0.3;
+const DEBUG_BOX_STROKE = "pink";
+const DEBUG_TEXT_FONT = "Helvetica";
+const DEBUG_TEXT_SIZE = 10;
+
+/**
+ * Helper to create a debug bounding box with distance text
+ */
 function createDebugBoundingBoxElement({ minX, minY, width, height, maxY }) {
-  const distance = minY + height;
+  const distance = minY + height; // Distance calculation
   return `
     <g>
-      <!-- Pink bounding box with border -->
       <rect x="${minX}" y="${minY}" width="${width}" height="${height}" 
-            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
-      <!-- Text for distance -->
+            fill="${DEBUG_BOX_FILL}" fill-opacity="${DEBUG_BOX_OPACITY}" stroke="${DEBUG_BOX_STROKE}" stroke-width="1" />
       <text x="${minX + 5}" y="${
     minY + height - 5
-  }" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
+  }" font-family="${DEBUG_TEXT_FONT}" font-weight="bold" font-size="${DEBUG_TEXT_SIZE}" fill="black">
         ${distance.toFixed(2)}
       </text>
     </g>
   `.trim();
 }
 
-// Offset bounding boxes
+/**
+ * Offsets a bounding box by a given amount
+ */
 function offsetBoundingBox(boundingBox, offsetX, offsetY) {
   if (!boundingBox || !("minX" in boundingBox && "minY" in boundingBox)) {
     console.error("Invalid bounding box for offset:", boundingBox);
     return null;
   }
-
   return {
     minX: boundingBox.minX - offsetX,
     minY: boundingBox.minY - offsetY,
@@ -36,7 +48,9 @@ function offsetBoundingBox(boundingBox, offsetX, offsetY) {
   };
 }
 
-// Function to offset path elements
+/**
+ * Offsets a path element's coordinates
+ */
 function offsetPath(pathData, offsetX, offsetY) {
   return pathData.replace(
     /(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)/g,
@@ -44,7 +58,9 @@ function offsetPath(pathData, offsetX, offsetY) {
   );
 }
 
-// Function to offset ellipse elements
+/**
+ * Offsets an ellipse element
+ */
 function offsetEllipse(element, offsetX, offsetY) {
   const cx = parseFloat(element.getAttribute("cx")) - offsetX;
   const cy = parseFloat(element.getAttribute("cy")) - offsetY;
@@ -53,7 +69,9 @@ function offsetEllipse(element, offsetX, offsetY) {
   return element.outerHTML;
 }
 
-// Function to offset polygon elements
+/**
+ * Offsets a polygon element's points
+ */
 function offsetPolygon(pointsData, offsetX, offsetY) {
   return pointsData.replace(
     /(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)/g,
@@ -61,37 +79,42 @@ function offsetPolygon(pointsData, offsetX, offsetY) {
   );
 }
 
-// Normalize and offset elements
-function normalizeElements(elements, offsetX, offsetY) {
-  return elements.map((element) => normalizeElement(element, offsetX, offsetY));
-}
-
+/**
+ * Normalizes and offsets a single element
+ */
 function normalizeElement(element, offsetX, offsetY) {
   if (element.includes("<path")) {
-    // Handle path elements
     return element.replace(
       /d="([^"]+)"/,
       (_, pathData) => `d="${offsetPath(pathData, offsetX, offsetY)}"`
     );
   } else if (element.includes("<ellipse")) {
-    // Handle ellipse elements
     const parser = new JSDOM(`<svg>${element}</svg>`).window.document;
     const ellipse = parser.querySelector("ellipse");
     return offsetEllipse(ellipse, offsetX, offsetY);
   } else if (element.includes("<polygon")) {
-    // Handle polygon elements
     return element.replace(
       /points="([^"]+)"/,
       (_, pointsData) =>
         `points="${offsetPolygon(pointsData, offsetX, offsetY)}"`
     );
   } else {
-    console.warn(`Unsupported element type for normalization: ${element}`);
+    if (DEBUG)
+      console.warn(`Unsupported element type for normalization: ${element}`);
     return element;
   }
 }
 
-// Transform SVG
+/**
+ * Normalizes and offsets multiple elements
+ */
+function normalizeElements(elements, offsetX, offsetY) {
+  return elements.map((element) => normalizeElement(element, offsetX, offsetY));
+}
+
+/**
+ * Transforms SVG elements to isometric view
+ */
 function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
   const inputSvg = readFileSync(inputPath, "utf-8");
 
@@ -102,7 +125,7 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
     ...doc.getElementsByTagName("rect"),
     ...doc.getElementsByTagName("circle"),
   ];
-  console.log(`Found ${elements.length} elements to process.`);
+  if (DEBUG) console.log(`Found ${elements.length} elements to process.`);
 
   if (elements.length === 0) {
     console.warn("No elements found to process. Skipping file.");
@@ -113,7 +136,6 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
   const wallsWithDistances = [];
   const roofs = [];
   const debugBoxes = [];
-  const padding = 10;
 
   elements.forEach((element, index) => {
     try {
@@ -135,21 +157,18 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
         return;
       }
 
-      // Use the bounding box of the object the wall is part of
       const distance = boundingBox.minY + boundingBox.height;
-      console.log(`Element at index ${index} has distance: ${distance}`);
+      if (DEBUG)
+        console.log(`Element at index ${index} has distance: ${distance}`);
 
-      // Add walls with their distance and bounding box
       walls.forEach((wall) => {
         wallsWithDistances.push({ wall, distance, boundingBox });
       });
 
-      // Add roofs in original order
       roofs.push(roof);
 
-      // Add debug bounding box
       if (boundingBox) {
-        debugBoxes.push(createDebugBoundingBoxElement(boundingBox));
+        if (DEBUG) debugBoxes.push(createDebugBoundingBoxElement(boundingBox));
         boundingBoxes.push(boundingBox);
       } else {
         console.warn(`Bounding box missing for element at index ${index}.`);
@@ -159,22 +178,20 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
     }
   });
 
-  // Calculate offsets
-  const minX = Math.min(...boundingBoxes.map((box) => box.minX)) - padding;
-  const minY = Math.min(...boundingBoxes.map((box) => box.minY)) - padding;
+  const minX = Math.min(...boundingBoxes.map((box) => box.minX)) - PADDING;
+  const minY = Math.min(...boundingBoxes.map((box) => box.minY)) - PADDING;
   const maxX =
-    Math.max(...boundingBoxes.map((box) => box.minX + box.width)) + padding;
+    Math.max(...boundingBoxes.map((box) => box.minX + box.width)) + PADDING;
   const maxY =
-    Math.max(...boundingBoxes.map((box) => box.minY + box.height)) + padding;
+    Math.max(...boundingBoxes.map((box) => box.minY + box.height)) + PADDING;
 
   const offsetX = minX;
   const offsetY = minY;
 
-  // Normalize all elements
   const normalizedWallsWithDistances = wallsWithDistances.map(
     ({ wall, distance, boundingBox }) => ({
       wall: normalizeElement(wall, offsetX, offsetY),
-      distance: distance, // Adjust distance for normalized coordinates
+      distance,
       boundingBox: offsetBoundingBox(boundingBox, offsetX, offsetY),
     })
   );
@@ -183,21 +200,16 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
     createDebugBoundingBoxElement(offsetBoundingBox(box, offsetX, offsetY))
   );
 
-  // Sort walls by distance (descending order)
   normalizedWallsWithDistances.sort((a, b) => a.distance - b.distance);
-
-  // Extract sorted walls
   const sortedWalls = normalizedWallsWithDistances.map(({ wall }) => wall);
 
-  // Calculate the final normalized viewBox
   const normalizedViewBox = `0 0 ${maxX - minX} ${maxY - minY}`;
 
-  // Build the final SVG content
   const outputSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="${normalizedViewBox}">
       ${sortedWalls.join("\n")}
       ${normalizedRoofs.join("\n")}
-      ${normalizedDebugBoxes.join("\n")}
+      ${DEBUG ? normalizedDebugBoxes.join("\n") : ""}
     </svg>
   `;
 
@@ -206,3 +218,12 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
 }
 
 export { transformSvgToIsometric };
+
+/**
+ * Documentation:
+ * Run this script with the `--debug` flag to enable debugging mode.
+ * Example: `node transformSvgToIsometric.js --debug`
+ * Debug mode includes:
+ * 1. Debug bounding boxes in the output SVG.
+ * 2. Console logs for distances, elements, and bounding boxes.
+ */

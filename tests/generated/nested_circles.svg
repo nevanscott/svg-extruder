@@ -11,22 +11,5 @@
     Z" fill="yellow" stroke="black" />
       <ellipse cx="60" cy="35" rx="50" ry="25" fill="yellow" stroke="black"></ellipse>
 <ellipse cx="60" cy="35" rx="20" ry="10" fill="black" stroke="black"></ellipse>
-      <g>
-      <!-- Pink bounding box with border -->
-      <rect x="10" y="10" width="100" height="70" 
-            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
-      <!-- Text for distance -->
-      <text x="15" y="75" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
-        80.00
-      </text>
-    </g>
-<g>
-      <!-- Pink bounding box with border -->
-      <rect x="40" y="25" width="40" height="40" 
-            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
-      <!-- Text for distance -->
-      <text x="45" y="60" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
-        65.00
-      </text>
-    </g>
+      
     </svg>
