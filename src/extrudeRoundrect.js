@@ -1,7 +1,7 @@
 import { calculateBoundingBox } from "./calculateBoundingBox.js";
 import { transformToIsometric } from "./transformToIsometric.js";
-import { createPolygonElement } from "./createPolygonElement.js";
 import { darkenColor } from "./darkenColor.js";
+import { createPathElement } from "./createPathElement.js"; // Assuming you have this function for paths
 
 // Extrude a rounded rectangle
 export function extrudeRoundrect(roundRect, extrusionHeight = 20) {
@@ -23,64 +23,56 @@ export function extrudeRoundrect(roundRect, extrusionHeight = 20) {
     const bottomLeft = [x + rx, y + height];
     const bottomRight = [x + width - rx, y + height];
 
+    // Transform corner points to isometric
     const isoTopLeft = transformToIsometric(...topLeft);
     const isoTopRight = transformToIsometric(...topRight);
     const isoBottomLeft = transformToIsometric(...bottomLeft);
     const isoBottomRight = transformToIsometric(...bottomRight);
 
-    const isoTopLeftExtruded = transformToIsometric(
-      ...topLeft,
-      -extrusionHeight
-    );
-    const isoTopRightExtruded = transformToIsometric(
-      ...topRight,
-      -extrusionHeight
-    );
-    const isoBottomLeftExtruded = transformToIsometric(
-      ...bottomLeft,
-      -extrusionHeight
-    );
-    const isoBottomRightExtruded = transformToIsometric(
-      ...bottomRight,
-      -extrusionHeight
-    );
+    // Path for the roof
+    const roofPath = `
+      M ${isoTopLeft[0]} ${isoTopLeft[1]}
+      L ${isoTopRight[0]} ${isoTopRight[1]}
+      A ${rx} ${rx * 0.5} 0 0 1 ${isoBottomRight[0]} ${isoBottomRight[1]}
+      L ${isoBottomLeft[0]} ${isoBottomLeft[1]}
+      A ${rx} ${rx * 0.5} 0 0 1 ${isoTopLeft[0]} ${isoTopLeft[1]}
+      Z
+    `.trim();
 
-    // Create roof
-    const roof = createPolygonElement(
-      [isoTopLeft, isoTopRight, isoBottomRight, isoBottomLeft],
-      fillColor
-    );
+    const roof = createPathElement(roofPath, fillColor);
 
-    // Create walls
+    // Create walls (unchanged for now)
     const walls = [
       // Left wall
-      createPolygonElement(
-        [isoTopLeft, isoBottomLeft, isoBottomLeftExtruded, isoTopLeftExtruded],
+      createPathElement(
+        `M ${isoTopLeft[0]} ${isoTopLeft[1]}
+         L ${isoBottomLeft[0]} ${isoBottomLeft[1]}
+         L ${isoBottomLeft[0]} ${isoBottomLeft[1] - extrusionHeight}
+         L ${isoTopLeft[0]} ${isoTopLeft[1] - extrusionHeight}
+         Z`,
         wallColor1
       ),
       // Front wall
-      createPolygonElement(
-        [
-          isoBottomLeft,
-          isoBottomRight,
-          isoBottomRightExtruded,
-          isoBottomLeftExtruded,
-        ],
+      createPathElement(
+        `M ${isoBottomLeft[0]} ${isoBottomLeft[1]}
+         L ${isoBottomRight[0]} ${isoBottomRight[1]}
+         L ${isoBottomRight[0]} ${isoBottomRight[1] - extrusionHeight}
+         L ${isoBottomLeft[0]} ${isoBottomLeft[1] - extrusionHeight}
+         Z`,
         wallColor2
       ),
       // Right wall
-      createPolygonElement(
-        [
-          isoTopRight,
-          isoBottomRight,
-          isoBottomRightExtruded,
-          isoTopRightExtruded,
-        ],
+      createPathElement(
+        `M ${isoTopRight[0]} ${isoTopRight[1]}
+         L ${isoBottomRight[0]} ${isoBottomRight[1]}
+         L ${isoBottomRight[0]} ${isoBottomRight[1] - extrusionHeight}
+         L ${isoTopRight[0]} ${isoTopRight[1] - extrusionHeight}
+         Z`,
         wallColor1
       ),
     ];
 
-    // Calculate bounding box
+    // Calculate the bounding box
     const boundingBox = calculateBoundingBox([roof, ...walls]);
 
     return { roof, walls, boundingBox };
