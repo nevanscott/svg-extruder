@@ -57,6 +57,11 @@ readdirSync(sourceDir).forEach((filename) => {
     try {
       transformSvgToIsometric(inputFile, outputFile); // Transform the SVG
 
+      // Ensure the transformed file exists before proceeding
+      if (!existsSync(outputFile)) {
+        throw new Error(`Transformed file not found: ${outputFile}`);
+      }
+
       // Read the original and transformed SVGs
       const originalSvg = readFileSync(inputFile, "utf-8");
       const transformedSvg = readFileSync(outputFile, "utf-8");
@@ -78,7 +83,7 @@ readdirSync(sourceDir).forEach((filename) => {
         </div>
       `;
     } catch (error) {
-      console.error(`Error processing ${filename}:`, error);
+      console.error(`Error processing ${filename}:`, error.message);
     }
   }
 });
