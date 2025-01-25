@@ -1,20 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 125 117.5">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 134.875 122.325">
       <polygon points="40,10 10,25 10,45 40,30" fill="#cc8400" />
 <polygon points="10,25 60,50 60,70 10,45" fill="#e59400" />
 <polygon points="90,35 60,50 60,70 90,55" fill="#cc8400" />
 <defs>
       <linearGradient id="gradient-100-50" gradientUnits="userSpaceOnUse"
-        x1="65" y1="95"
-        x2="115" y2="95">
+        x1="55.125" y1="95"
+        x2="124.875" y2="95">
         <stop offset="0%" style="stop-color:#730073;stop-opacity:1" />
         <stop offset="100%" style="stop-color:#660066;stop-opacity:1" />
       </linearGradient>
-    </defs><path d="M65,75
-    A25,12.5 0 0,0 115,75
-    L115,95
-    A25,12.5 0 0,1 65,95
+    </defs><path d="M55.125,75
+    A34.875,17.325 0 0,0 124.875,75
+    L124.875,95
+    A34.875,17.325 0 0,1 55.125,95
     Z" fill="url(#gradient-100-50)" />
       <polygon points="40,10 90,35 60,50 10,25" fill="orange" />
-<ellipse cx="90" cy="75" rx="25" ry="12.5" fill="purple" />
+<ellipse cx="90" cy="75" rx="34.875" ry="17.325" fill="purple" />
       
     </svg>

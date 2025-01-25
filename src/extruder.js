@@ -270,7 +270,7 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
 
   const boundingBoxes = [];
   const wallsWithDistances = [];
-  const roofs = [];
+  const roofsInOrder = []; // Keep roofs in original appearance order
   const debugBoxes = [];
 
   elements.forEach((element, index) => {
@@ -301,7 +301,8 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
         wallsWithDistances.push({ wall, distance, boundingBox });
       });
 
-      roofs.push(roof);
+      // Append the roof directly in the order of the original elements
+      roofsInOrder.push(roof);
 
       if (boundingBox) {
         if (DEBUG) debugBoxes.push(createDebugBoundingBoxElement(boundingBox));
@@ -331,11 +332,14 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
       boundingBox: offsetBoundingBox(boundingBox, offsetX, offsetY),
     })
   );
-  const normalizedRoofs = normalizeElements(roofs, offsetX, offsetY);
+
+  // Normalize roofs without changing their stacking order
+  const normalizedRoofs = normalizeElements(roofsInOrder, offsetX, offsetY);
   const normalizedDebugBoxes = boundingBoxes.map((box) =>
     createDebugBoundingBoxElement(offsetBoundingBox(box, offsetX, offsetY))
   );
 
+  // Sort walls based on distance for correct layering
   normalizedWallsWithDistances.sort((a, b) => a.distance - b.distance);
   const sortedWalls = normalizedWallsWithDistances.map(({ wall }) => wall);
 

@@ -17,9 +17,9 @@ export function extrudeCircle(circle, extrusionHeight = 20) {
   const centerTop = transformToIsometric(cx, cy);
   const centerBottom = transformToIsometric(cx, cy, -extrusionHeight);
 
-  // Calculate the isometric radii for squashing
-  const radiusX = r;
-  const radiusY = r * 0.5;
+  // Calculate the isometric radii
+  const radiusX = r * 1.395; // Stretch horizontally
+  const radiusY = r * 0.693; // Compress vertically
 
   // Define the top and bottom arcs
   const wallPath = `
@@ -44,14 +44,6 @@ export function extrudeCircle(circle, extrusionHeight = 20) {
       </linearGradient>
     </defs>
   `.trim();
-
-  // Debug Gradient Coordinates
-  console.log("Gradient Coordinates:", {
-    x1: centerBottom[0] - radiusX,
-    y1: centerBottom[1],
-    x2: centerBottom[0] + radiusX,
-    y2: centerBottom[1],
-  });
 
   // Create roof element
   const roofElement = createEllipseElement(

@@ -1,16 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 70">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103.7 81.57999999999998">
       <defs>
       <linearGradient id="gradient-50-50" gradientUnits="userSpaceOnUse"
-        x1="10" y1="45"
-        x2="70" y2="45">
+        x1="10" y1="50.79"
+        x2="93.7" y2="50.79">
         <stop offset="0%" style="stop-color:#e50000;stop-opacity:1" />
         <stop offset="100%" style="stop-color:#cc0000;stop-opacity:1" />
       </linearGradient>
-    </defs><path d="M10,25
-    A30,15 0 0,0 70,25
-    L70,45
-    A30,15 0 0,1 10,45
+    </defs><path d="M10,30.79
+    A41.85,20.79 0 0,0 93.7,30.79
+    L93.7,50.79
+    A41.85,20.79 0 0,1 10,50.79
     Z" fill="url(#gradient-50-50)" />
-      <ellipse cx="40" cy="25" rx="30" ry="15" fill="red" />
+      <ellipse cx="51.85" cy="30.79" rx="41.85" ry="20.79" fill="red" />
       
     </svg>
