@@ -49,13 +49,66 @@ function offsetBoundingBox(boundingBox, offsetX, offsetY) {
 }
 
 /**
- * Offsets a path element's coordinates
+ * Offsets the coordinates in a path's `d` attribute string or full path element.
  */
-function offsetPath(pathData, offsetX, offsetY) {
-  return pathData.replace(
-    /(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)/g,
-    (match, x, _, y) => `${parseFloat(x) - offsetX},${parseFloat(y) - offsetY}`
-  );
+function offsetPath(pathElement, offsetX, offsetY) {
+  try {
+    // Check if the input is just the `d` attribute value (not a full path element)
+    if (!pathElement.includes("<path")) {
+      // Assume it's just the `d` attribute's value
+      return pathElement
+        .replace(
+          /([MmLlTt])\s*(-?\d+(\.\d+)?)[ ,](-?\d+(\.\d+)?)/g, // Handle M, L, T commands
+          (fullMatch, command, x, _, y) => {
+            const newX = parseFloat(x) - offsetX;
+            const newY = parseFloat(y) - offsetY;
+            return `${command}${newX},${newY}`;
+          }
+        )
+        .replace(
+          /([Aa])\s*(-?\d+(\.\d+)?)[ ,](-?\d+(\.\d+)?)[ ,](\d+)[ ,](\d+)[ ,](\d+)[ ,](-?\d+(\.\d+)?)[ ,](-?\d+(\.\d+)?)/g, // Handle A commands
+          (
+            fullMatch,
+            command,
+            rx,
+            _,
+            ry,
+            __,
+            xRot,
+            largeArc,
+            sweep,
+            x,
+            ___,
+            y
+          ) => {
+            const newX = parseFloat(x) - offsetX;
+            const newY = parseFloat(y) - offsetY;
+            return `${command}${rx},${ry} ${xRot} ${largeArc},${sweep} ${newX},${newY}`;
+          }
+        );
+    }
+
+    // If it's a full `<path>` element, extract the `d` attribute
+    const match = pathElement.match(/d="([^"]+)"/);
+    if (!match) {
+      console.warn("No `d` attribute found in path element:", pathElement);
+      return pathElement; // Return the original element unchanged
+    }
+
+    const pathData = match[1]; // The content of the `d` attribute
+    const updatedPathData = offsetPath(pathData, offsetX, offsetY);
+
+    // Replace the `d` attribute in the original path element
+    return pathElement.replace(`d="${pathData}"`, `d="${updatedPathData}"`);
+  } catch (error) {
+    console.error("Error in offsetPath:", {
+      pathElement,
+      offsetX,
+      offsetY,
+      error,
+    });
+    return pathElement; // Return the original element if an error occurs
+  }
 }
 
 /**
@@ -80,29 +133,112 @@ function offsetPolygon(pointsData, offsetX, offsetY) {
 }
 
 /**
- * Normalizes and offsets a single element
+ * Offsets a gradient's coordinates (linear or radial)
  */
-function normalizeElement(element, offsetX, offsetY) {
-  if (element.includes("<path")) {
-    return element.replace(
-      /d="([^"]+)"/,
-      (_, pathData) => `d="${offsetPath(pathData, offsetX, offsetY)}"`
-    );
-  } else if (element.includes("<ellipse")) {
-    const parser = new JSDOM(`<svg>${element}</svg>`).window.document;
-    const ellipse = parser.querySelector("ellipse");
-    return offsetEllipse(ellipse, offsetX, offsetY);
-  } else if (element.includes("<polygon")) {
-    return element.replace(
-      /points="([^"]+)"/,
-      (_, pointsData) =>
-        `points="${offsetPolygon(pointsData, offsetX, offsetY)}"`
-    );
-  } else {
-    if (DEBUG)
-      console.warn(`Unsupported element type for normalization: ${element}`);
-    return element;
+function offsetGradient(gradientElement, offsetX, offsetY) {
+  try {
+    // Extract x1, y1, x2, y2 for linear gradients
+    if (gradientElement.includes("linearGradient")) {
+      return gradientElement
+        .replace(
+          /x1="(-?\d+(\.\d+)?)"/,
+          (_, x1) => `x1="${parseFloat(x1) - offsetX}"`
+        )
+        .replace(
+          /y1="(-?\d+(\.\d+)?)"/,
+          (_, y1) => `y1="${parseFloat(y1) - offsetY}"`
+        )
+        .replace(
+          /x2="(-?\d+(\.\d+)?)"/,
+          (_, x2) => `x2="${parseFloat(x2) - offsetX}"`
+        )
+        .replace(
+          /y2="(-?\d+(\.\d+)?)"/,
+          (_, y2) => `y2="${parseFloat(y2) - offsetY}"`
+        );
+    }
+    // Handle radial gradients (cx, cy, fx, fy)
+    if (gradientElement.includes("radialGradient")) {
+      return gradientElement
+        .replace(
+          /cx="(-?\d+(\.\d+)?)"/,
+          (_, cx) => `cx="${parseFloat(cx) - offsetX}"`
+        )
+        .replace(
+          /cy="(-?\d+(\.\d+)?)"/,
+          (_, cy) => `cy="${parseFloat(cy) - offsetY}"`
+        )
+        .replace(
+          /fx="(-?\d+(\.\d+)?)"/,
+          (_, fx) => `fx="${parseFloat(fx) - offsetX}"`
+        )
+        .replace(
+          /fy="(-?\d+(\.\d+)?)"/,
+          (_, fy) => `fy="${parseFloat(fy) - offsetY}"`
+        );
+    }
+    return gradientElement;
+  } catch (error) {
+    console.error("Error in offsetGradient:", {
+      gradientElement,
+      offsetX,
+      offsetY,
+      error,
+    });
+    return gradientElement; // Return original element if an error occurs
   }
+}
+
+/**
+ * Normalizes and offsets a single element string that might contain multiple tags.
+ */
+function normalizeElement(elementString, offsetX, offsetY) {
+  let updatedString = elementString;
+
+  // Handle <path> elements
+  updatedString = updatedString.replace(
+    /<path[^>]*d="([^"]+)"[^>]*>/g,
+    (match, pathData) => {
+      const updatedPathData = offsetPath(pathData, offsetX, offsetY);
+      return match.replace(pathData, updatedPathData);
+    }
+  );
+
+  // Handle <ellipse> elements
+  updatedString = updatedString.replace(
+    /<ellipse[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*>/g,
+    (match, cx, cy) => {
+      const newCx = parseFloat(cx) - offsetX;
+      const newCy = parseFloat(cy) - offsetY;
+      return match
+        .replace(`cx="${cx}"`, `cx="${newCx}"`)
+        .replace(`cy="${cy}"`, `cy="${newCy}"`);
+    }
+  );
+
+  // Handle <polygon> elements
+  updatedString = updatedString.replace(
+    /<polygon[^>]*points="([^"]+)"[^>]*>/g,
+    (match, pointsData) => {
+      const updatedPoints = offsetPolygon(pointsData, offsetX, offsetY);
+      return match.replace(pointsData, updatedPoints);
+    }
+  );
+
+  // Handle <linearGradient> elements
+  updatedString = updatedString.replace(
+    /<linearGradient[^>]*>/g,
+    (gradientMatch) => offsetGradient(gradientMatch, offsetX, offsetY)
+  );
+
+  // Handle <radialGradient> elements
+  updatedString = updatedString.replace(
+    /<radialGradient[^>]*>/g,
+    (gradientMatch) => offsetGradient(gradientMatch, offsetX, offsetY)
+  );
+
+  // Return the fully updated string
+  return updatedString;
 }
 
 /**

@@ -1,5 +1,13 @@
-// Create ellipse element
-export function createEllipseElement(center, radiusX, radiusY, fill = "gray") {
+// Create an ellipse element without strokes by default
+export function createEllipseElement(
+  center,
+  radiusX,
+  radiusY,
+  fill = "gray",
+  stroke = null
+) {
   const [cx, cy] = center;
-  return `<ellipse cx="${cx}" cy="${cy}" rx="${radiusX}" ry="${radiusY}" fill="${fill}" stroke="black" />`;
+  return stroke
+    ? `<ellipse cx="${cx}" cy="${cy}" rx="${radiusX}" ry="${radiusY}" fill="${fill}" stroke="${stroke}" />`
+    : `<ellipse cx="${cx}" cy="${cy}" rx="${radiusX}" ry="${radiusY}" fill="${fill}" />`;
 }

@@ -9,8 +9,9 @@ export function extrudeCircle(circle, extrusionHeight = 20) {
   const r = parseFloat(circle.getAttribute("r")) || 0;
   const fillColor = circle.getAttribute("fill") || "none";
 
-  // Darken the wall color
-  const wallColor = darkenColor(fillColor, 0.8); // Slightly darker than the original color
+  // Darken the wall colors
+  const wallColorLeft = darkenColor(fillColor, 0.9);
+  const wallColorRight = darkenColor(fillColor, 0.8);
 
   // Transform the center of the top and bottom circles to isometric
   const centerTop = transformToIsometric(cx, cy);
@@ -31,6 +32,27 @@ export function extrudeCircle(circle, extrusionHeight = 20) {
     Z
   `.trim();
 
+  // Create gradient for wall
+  const gradientId = `gradient-${cx}-${cy}`;
+  const gradientElement = `
+    <defs>
+      <linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse"
+        x1="${centerBottom[0] - radiusX}" y1="${centerBottom[1]}"
+        x2="${centerBottom[0] + radiusX}" y2="${centerBottom[1]}">
+        <stop offset="0%" style="stop-color:${wallColorLeft};stop-opacity:1" />
+        <stop offset="100%" style="stop-color:${wallColorRight};stop-opacity:1" />
+      </linearGradient>
+    </defs>
+  `.trim();
+
+  // Debug Gradient Coordinates
+  console.log("Gradient Coordinates:", {
+    x1: centerBottom[0] - radiusX,
+    y1: centerBottom[1],
+    x2: centerBottom[0] + radiusX,
+    y2: centerBottom[1],
+  });
+
   // Create roof element
   const roofElement = createEllipseElement(
     centerTop,
@@ -39,26 +61,26 @@ export function extrudeCircle(circle, extrusionHeight = 20) {
     fillColor
   );
 
-  // Create wall element with darkened color
-  const wallElement = createPathElement(wallPath, wallColor);
+  // Create wall element with gradient fill
+  const wallElement = createPathElement(wallPath, `url(#${gradientId})`);
 
-  // Calculate bounding box internally
+  // Calculate bounding box
   const boundingBox = {
-    minX: centerBottom[0] - radiusX, // Leftmost point
-    minY: Math.min(centerTop[1] - radiusY, centerBottom[1] - radiusY), // Topmost point
-    maxX: centerBottom[0] + radiusX, // Rightmost point
-    maxY: centerBottom[1] + radiusY, // Bottommost point
-    width: 2 * radiusX, // Total width
+    minX: centerBottom[0] - radiusX,
+    minY: Math.min(centerTop[1] - radiusY, centerBottom[1] - radiusY),
+    maxX: centerBottom[0] + radiusX,
+    maxY: centerBottom[1] + radiusY,
+    width: 2 * radiusX,
     height:
       centerBottom[1] +
       radiusY -
-      Math.min(centerTop[1] - radiusY, centerBottom[1] - radiusY), // Total height
+      Math.min(centerTop[1] - radiusY, centerBottom[1] - radiusY),
   };
 
-  // Return the extrusion data
+  // Return extrusion data
   return {
     roof: roofElement,
-    walls: [wallElement],
+    walls: [gradientElement + wallElement],
     fillColor,
     boundingBox,
   };

@@ -1,5 +1,7 @@
-// Create polygon element
-export function createPolygonElement(points, fill = "gray", stroke = "black") {
+// Create a polygon element without strokes by default
+export function createPolygonElement(points, fill = "gray", stroke = null) {
   const pointsStr = points.map(([x, y]) => `${x},${y}`).join(" ");
-  return `<polygon points="${pointsStr}" fill="${fill}" stroke="${stroke}" />`;
+  return stroke
+    ? `<polygon points="${pointsStr}" fill="${fill}" stroke="${stroke}" />`
+    : `<polygon points="${pointsStr}" fill="${fill}" />`;
 }

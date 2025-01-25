@@ -12,8 +12,9 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
     const height = parseFloat(rect.getAttribute("height")) || 0;
     const fillColor = rect.getAttribute("fill") || "none";
 
-    // Darken the wall color
-    const wallColor = darkenColor(fillColor, 0.8);
+    // Darken the wall colors with different factors
+    const wallColor1 = darkenColor(fillColor, 0.8);
+    const wallColor2 = darkenColor(fillColor, 0.9);
 
     const topLeft = [x, y];
     const topRight = [x + width, y];
@@ -48,12 +49,14 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
       fillColor
     );
 
-    // Create walls with the darkened color
+    // Create walls with different darkened colors
     const walls = [
+      // Left wall
       createPolygonElement(
         [isoTopLeft, isoBottomLeft, isoBottomLeftExtruded, isoTopLeftExtruded],
-        wallColor
+        wallColor1
       ),
+      // Front wall
       createPolygonElement(
         [
           isoBottomLeft,
@@ -61,8 +64,9 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
           isoBottomRightExtruded,
           isoBottomLeftExtruded,
         ],
-        wallColor
+        wallColor2
       ),
+      // Right wall
       createPolygonElement(
         [
           isoTopRight,
@@ -70,7 +74,7 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
           isoBottomRightExtruded,
           isoTopRightExtruded,
         ],
-        wallColor
+        wallColor1
       ),
     ];
 

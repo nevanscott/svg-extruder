@@ -1,4 +1,12 @@
-// Create a path element
-export function createPathElement(pathData, fill = "gray", stroke = "black") {
-  return `<path d="${pathData}" fill="${fill}" stroke="${stroke}" />`;
+// Create a path element, optionally with a gradient fill
+export function createPathElement(
+  pathData,
+  fill = "gray",
+  stroke = null,
+  gradientId = null
+) {
+  const fillAttr = gradientId ? `url(#${gradientId})` : fill;
+  return stroke
+    ? `<path d="${pathData}" fill="${fillAttr}" stroke="${stroke}" />`
+    : `<path d="${pathData}" fill="${fillAttr}" />`;
 }

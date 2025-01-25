@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 165">
-      <polygon points="40,10 10,25 10,45 40,30" fill="#006600" stroke="black" />
-<polygon points="10,25 60,50 60,70 10,45" fill="#006600" stroke="black" />
-<polygon points="90,35 60,50 60,70 90,55" fill="#006600" stroke="black" />
-<polygon points="60,90 10,115 10,135 60,110" fill="#cc8400" stroke="black" />
-<polygon points="10,115 50,135 50,155 10,135" fill="#cc8400" stroke="black" />
-<polygon points="100,110 50,135 50,155 100,130" fill="#cc8400" stroke="black" />
-      <polygon points="40,10 90,35 60,50 10,25" fill="green" stroke="black" />
-<polygon points="60,90 100,110 50,135 10,115" fill="orange" stroke="black" />
+      <polygon points="40,10 10,25 10,45 40,30" fill="#006600" />
+<polygon points="10,25 60,50 60,70 10,45" fill="#007300" />
+<polygon points="90,35 60,50 60,70 90,55" fill="#006600" />
+<polygon points="60,90 10,115 10,135 60,110" fill="#cc8400" />
+<polygon points="10,115 50,135 50,155 10,135" fill="#e59400" />
+<polygon points="100,110 50,135 50,155 100,130" fill="#cc8400" />
+      <polygon points="40,10 90,35 60,50 10,25" fill="green" />
+<polygon points="60,90 100,110 50,135 10,115" fill="orange" />
       
     </svg>
