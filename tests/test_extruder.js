@@ -30,7 +30,7 @@ const htmlHeader = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SVG Transformation Demo</title>
+  <title>SVG Extruder Demo</title>
   <style>
     body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem; background-color: #fafafa; }
     .container { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; }
@@ -41,7 +41,7 @@ const htmlHeader = `
   </style>
 </head>
 <body>
-  <h1>SVG Transformation Demo</h1>
+  <h1>SVG Extruder Demo</h1>
   <div class="container">
 `;
 
