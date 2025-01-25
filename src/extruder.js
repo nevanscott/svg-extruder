@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { JSDOM } from "jsdom";
 import { extrudeRectangle } from "./extrudeRectangle.js";
 import { extrudeCircle } from "./extrudeCircle.js";
+import { extrudeRoundrect } from "./extrudeRoundrect.js";
 
 // Debug Mode
 const DEBUG = process.argv.includes("--debug"); // Pass --debug flag to enable debugging
@@ -277,7 +278,9 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
     try {
       let extrusionData;
 
-      if (element.tagName === "rect") {
+      if (element.tagName === "rect" && element.hasAttribute("rx")) {
+        extrusionData = extrudeRoundrect(element, extrusionHeight); // Use new extruder for rounded rectangles
+      } else if (element.tagName === "rect") {
         extrusionData = extrudeRectangle(element, extrusionHeight);
       } else if (element.tagName === "circle") {
         extrusionData = extrudeCircle(element, extrusionHeight);
@@ -301,7 +304,6 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
         wallsWithDistances.push({ wall, distance, boundingBox });
       });
 
-      // Append the roof directly in the order of the original elements
       roofsInOrder.push(roof);
 
       if (boundingBox) {
@@ -333,13 +335,11 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
     })
   );
 
-  // Normalize roofs without changing their stacking order
   const normalizedRoofs = normalizeElements(roofsInOrder, offsetX, offsetY);
   const normalizedDebugBoxes = boundingBoxes.map((box) =>
     createDebugBoundingBoxElement(offsetBoundingBox(box, offsetX, offsetY))
   );
 
-  // Sort walls based on distance for correct layering
   normalizedWallsWithDistances.sort((a, b) => a.distance - b.distance);
   const sortedWalls = normalizedWallsWithDistances.map(({ wall }) => wall);
 
@@ -358,7 +358,6 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
 }
 
 export { transformSvgToIsometric };
-
 /**
  * Documentation:
  * Run this script with the `--debug` flag to enable debugging mode.
