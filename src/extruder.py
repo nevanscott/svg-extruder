@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import colorsys
 
 __all__ = [
     "transform_to_isometric",
@@ -18,6 +19,21 @@ def transform_to_isometric(x, y, z=0):
     return iso_x, iso_y
 
 
+def darken_color(hex_color, factor=0.7):
+    """
+    Darkens a hex color by a given factor.
+    """
+    if hex_color == "none" or not hex_color.startswith("#"):
+        return hex_color  # Return the original color for non-hex or "none" values
+
+    hex_color = hex_color.lstrip("#")
+    rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+    h, l, s = colorsys.rgb_to_hls(*[x / 255.0 for x in rgb])
+    l = max(0, l * factor)
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+    return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
+
+
 def extrude_rectangle(rect, extrusion_height=20):
     """
     Extrudes a rectangle into an isometric view, adding height downward.
@@ -26,6 +42,9 @@ def extrude_rectangle(rect, extrusion_height=20):
     y = float(rect.get("y", 0))
     width = float(rect.get("width", 0))
     height = float(rect.get("height", 0))
+
+    # Extract the fill color from the rectangle
+    fill_color = rect.get("fill", "none")
 
     # Compute original rectangle corners (top-down view)
     top_left = (x, y)
@@ -47,32 +66,20 @@ def extrude_rectangle(rect, extrusion_height=20):
         *bottom_right, z=extrusion_height
     )
 
-    # Debugging: Log the computed points
-    print("Top face:", [iso_top_left, iso_top_right, iso_bottom_right, iso_bottom_left])
-    print(
-        "Bottom face:",
-        [
-            iso_top_left_extruded,
-            iso_top_right_extruded,
-            iso_bottom_right_extruded,
-            iso_bottom_left_extruded,
-        ],
-    )
-
     # Build the faces of the extruded block in proper drawing order
     faces = {
         "top": [iso_top_left, iso_top_right, iso_bottom_right, iso_bottom_left],
-        "front": [
-            iso_bottom_left,
-            iso_bottom_right,
-            iso_bottom_right_extruded,
-            iso_bottom_left_extruded,
-        ],
         "left": [
             iso_top_left,
             iso_bottom_left,
             iso_bottom_left_extruded,
             iso_top_left_extruded,
+        ],
+        "front": [
+            iso_bottom_left,
+            iso_bottom_right,
+            iso_bottom_right_extruded,
+            iso_bottom_left_extruded,
         ],
         "right": [
             iso_top_right,
@@ -82,7 +89,7 @@ def extrude_rectangle(rect, extrusion_height=20):
         ],
     }
 
-    return faces
+    return faces, fill_color
 
 
 def create_polygon_element(points, fill="gray", stroke="black"):
@@ -139,13 +146,20 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
 
     for element in root:
         if element.tag.endswith("rect"):  # Handle rectangles only
-            faces = extrude_rectangle(
+            faces, fill_color = extrude_rectangle(
                 element, extrusion_height=-extrusion_height
             )  # Correct extrusion downward
 
             # Add faces in the correct drawing order
             for face_name in ["left", "front", "right", "top"]:
-                polygon_element = create_polygon_element(faces[face_name])
+                face_fill = (
+                    darken_color(fill_color, factor=0.8)
+                    if face_name != "top"
+                    else fill_color
+                )
+                polygon_element = create_polygon_element(
+                    faces[face_name], fill=face_fill
+                )
                 new_svg.append(polygon_element)
 
             # Collect all points for viewport calculation
