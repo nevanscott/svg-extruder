@@ -140,45 +140,67 @@ def create_circle_element(center, radius_x, radius_y, fill="gray", stroke="black
 
 
 def calculate_viewport(elements, padding=10):
+    """
+    Calculate the bounding box for the transformed elements to adjust the SVG viewport,
+    including optional padding.
+    """
     min_x, min_y, max_x, max_y = (
         float("inf"),
         float("inf"),
         float("-inf"),
         float("-inf"),
     )
+
     for element in elements:
-        if isinstance(element, list):
+        if isinstance(element, list):  # For polygons or point lists
             for x, y in element:
                 min_x = min(min_x, x)
                 min_y = min(min_y, y)
                 max_x = max(max_x, x)
                 max_y = max(max_y, y)
-        elif isinstance(element, tuple):
+        elif isinstance(element, tuple):  # For ellipses (center, rx, ry)
             center, rx, ry = element
             cx, cy = center
             min_x = min(min_x, cx - rx)
             min_y = min(min_y, cy - ry)
             max_x = max(max_x, cx + rx)
             max_y = max(max_y, cy + ry)
+        elif isinstance(element, str):  # For paths
+            # Paths might need parsing for bounding box estimation
+            continue
+
+    # Add padding to the bounding box
     width = max_x - min_x + 2 * padding
     height = max_y - min_y + 2 * padding
+
     return min_x - padding, min_y - padding, width, height
 
 
 def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
+    """
+    Read an SVG file, transform rectangles and circles into isometric views with extrusion, and save the output.
+    """
+    # Parse the input SVG
     tree = ET.parse(input_file)
     root = tree.getroot()
+
+    # Store transformed elements to calculate viewport later
     transformed_elements = []
+
+    # Create a new SVG root for the output
     ET.register_namespace("", "http://www.w3.org/2000/svg")
     new_svg = ET.Element(
         "svg",
         attrib={"xmlns": "http://www.w3.org/2000/svg", "width": "200", "height": "200"},
     )
+
     for element in root:
-        if element.tag.endswith("rect"):
+        if element.tag.endswith("rect"):  # Handle rectangles
             faces, fill_color = extrude_rectangle(
                 element, extrusion_height=-extrusion_height
             )
+
+            # Add faces in the correct drawing order
             for face_name in ["left", "front", "right", "top"]:
                 face_fill = (
                     darken_color(fill_color, factor=0.8)
@@ -189,24 +211,38 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
                     faces[face_name], fill=face_fill
                 )
                 new_svg.append(polygon_element)
+
+            # Collect all points for viewport calculation
             transformed_elements.extend(faces.values())
-        elif element.tag.endswith("circle"):
+
+        elif element.tag.endswith("circle"):  # Handle circles
             faces, fill_color = extrude_circle(
                 element, extrusion_height=-extrusion_height
             )
+
+            # Add top face (ellipse)
             top_center, radius_x, radius_y = faces["top"]
             ellipse_element = create_circle_element(
                 top_center, radius_x, radius_y, fill=fill_color
             )
             new_svg.append(ellipse_element)
+
+            # Add side face (path)
             side_fill = darken_color(fill_color, factor=0.8)
             side_path_element = ET.Element(
                 "path",
                 attrib={"d": faces["side_path"], "fill": side_fill, "stroke": "black"},
             )
             new_svg.append(side_path_element)
+
+            # Collect top ellipse for viewport calculation
+            transformed_elements.append(faces["top"])
+
+    # Adjust the SVG viewport based on the transformed elements
     min_x, min_y, width, height = calculate_viewport(transformed_elements, padding=10)
     new_svg.set("viewBox", f"{min_x} {min_y} {width} {height}")
+
+    # Write the output SVG
     output_tree = ET.ElementTree(new_svg)
     output_tree.write(output_file)
     print(f"Isometric transformed SVG with extrusion written to: {output_file}")
