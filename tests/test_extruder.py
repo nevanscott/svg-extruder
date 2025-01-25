@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../s
 
 from extruder import transform_svg_to_isometric
 
-# Define source and output directories
+# Paths to test files
 source_dir = "tests/sources"
 output_dir = "tests/generated"
 
@@ -20,4 +20,6 @@ for filename in os.listdir(source_dir):
         output_file = os.path.join(output_dir, filename)
 
         print(f"Processing {input_file} -> {output_file}")
-        transform_svg_to_isometric(input_file, output_file, extrusion_height=20)
+        transform_svg_to_isometric(
+            input_file, output_file
+        )  # No extrusion_height argument

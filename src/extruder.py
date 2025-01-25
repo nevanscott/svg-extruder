@@ -4,7 +4,9 @@ import colorsys
 __all__ = [
     "transform_to_isometric",
     "extrude_rectangle",
+    "extrude_circle",
     "create_polygon_element",
+    "create_circle_element",
     "calculate_viewport",
     "transform_svg_to_isometric",
 ]
@@ -34,9 +36,9 @@ def darken_color(hex_color, factor=0.7):
     return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
 
 
-def extrude_rectangle(rect, extrusion_height=20):
+def extrude_rectangle(rect):
     """
-    Extrudes a rectangle into an isometric view, adding height downward.
+    Transform a rectangle into an isometric top face.
     """
     x = float(rect.get("x", 0))
     y = float(rect.get("y", 0))
@@ -58,38 +60,29 @@ def extrude_rectangle(rect, extrusion_height=20):
     iso_bottom_left = transform_to_isometric(*bottom_left)
     iso_bottom_right = transform_to_isometric(*bottom_right)
 
-    # Transform corners for the extruded bottom face (downward)
-    iso_top_left_extruded = transform_to_isometric(*top_left, z=extrusion_height)
-    iso_top_right_extruded = transform_to_isometric(*top_right, z=extrusion_height)
-    iso_bottom_left_extruded = transform_to_isometric(*bottom_left, z=extrusion_height)
-    iso_bottom_right_extruded = transform_to_isometric(
-        *bottom_right, z=extrusion_height
-    )
-
-    # Build the faces of the extruded block in proper drawing order
-    faces = {
-        "top": [iso_top_left, iso_top_right, iso_bottom_right, iso_bottom_left],
-        "left": [
-            iso_top_left,
-            iso_bottom_left,
-            iso_bottom_left_extruded,
-            iso_top_left_extruded,
-        ],
-        "front": [
-            iso_bottom_left,
-            iso_bottom_right,
-            iso_bottom_right_extruded,
-            iso_bottom_left_extruded,
-        ],
-        "right": [
-            iso_top_right,
-            iso_bottom_right,
-            iso_bottom_right_extruded,
-            iso_top_right_extruded,
-        ],
-    }
+    # Build the top face of the rectangle
+    faces = {"top": [iso_top_left, iso_top_right, iso_bottom_right, iso_bottom_left]}
 
     return faces, fill_color
+
+
+def extrude_circle(circle):
+    """
+    Transform a circle into an isometric top face.
+    """
+    cx = float(circle.get("cx", 0))
+    cy = float(circle.get("cy", 0))
+    r = float(circle.get("r", 0))
+
+    # Extract the fill color from the circle
+    fill_color = circle.get("fill", "none")
+
+    # Transform the center and radius of the circle
+    center = transform_to_isometric(cx, cy)
+    radius_x = r
+    radius_y = r * 0.5  # Adjust for isometric scaling
+
+    return center, radius_x, radius_y, fill_color
 
 
 def create_polygon_element(points, fill="gray", stroke="black"):
@@ -103,6 +96,25 @@ def create_polygon_element(points, fill="gray", stroke="black"):
     return polygon
 
 
+def create_circle_element(center, radius_x, radius_y, fill="gray", stroke="black"):
+    """
+    Create an SVG ellipse element from a center point and radii (approximation for circles).
+    """
+    cx, cy = center
+    ellipse = ET.Element(
+        "ellipse",
+        attrib={
+            "cx": str(cx),
+            "cy": str(cy),
+            "rx": str(radius_x),
+            "ry": str(radius_y),
+            "fill": fill,
+            "stroke": stroke,
+        },
+    )
+    return ellipse
+
+
 def calculate_viewport(elements, padding=10):
     """
     Calculate the bounding box for the transformed elements to adjust the SVG viewport,
@@ -113,12 +125,20 @@ def calculate_viewport(elements, padding=10):
     max_x = float("-inf")
     max_y = float("-inf")
 
-    for points in elements:
-        for x, y in points:
-            min_x = min(min_x, x)
-            min_y = min(min_y, y)
-            max_x = max(max_x, x)
-            max_y = max(max_y, y)
+    for element in elements:
+        if isinstance(element, list):  # For polygons or point lists
+            for x, y in element:
+                min_x = min(min_x, x)
+                min_y = min(min_y, y)
+                max_x = max(max_x, x)
+                max_y = max(max_y, y)
+        elif isinstance(element, tuple):  # For ellipses (center, rx, ry)
+            center, rx, ry = element
+            cx, cy = center
+            min_x = min(min_x, cx - rx)
+            min_y = min(min_y, cy - ry)
+            max_x = max(max_x, cx + rx)
+            max_y = max(max_y, cy + ry)
 
     width = max_x - min_x + 2 * padding
     height = max_y - min_y + 2 * padding
@@ -126,9 +146,9 @@ def calculate_viewport(elements, padding=10):
     return min_x - padding, min_y - padding, width, height
 
 
-def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
+def transform_svg_to_isometric(input_file, output_file):
     """
-    Read an SVG file, transform rectangles into isometric views with extrusion, and save the output.
+    Read an SVG file, transform rectangles and circles into isometric top views, and save the output.
     """
     # Parse the input SVG
     tree = ET.parse(input_file)
@@ -145,25 +165,27 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
     )
 
     for element in root:
-        if element.tag.endswith("rect"):  # Handle rectangles only
-            faces, fill_color = extrude_rectangle(
-                element, extrusion_height=-extrusion_height
-            )  # Correct extrusion downward
+        if element.tag.endswith("rect"):  # Handle rectangles
+            faces, fill_color = extrude_rectangle(element)
 
-            # Add faces in the correct drawing order
-            for face_name in ["left", "front", "right", "top"]:
-                face_fill = (
-                    darken_color(fill_color, factor=0.8)
-                    if face_name != "top"
-                    else fill_color
-                )
-                polygon_element = create_polygon_element(
-                    faces[face_name], fill=face_fill
-                )
-                new_svg.append(polygon_element)
+            # Add top face
+            polygon_element = create_polygon_element(faces["top"], fill=fill_color)
+            new_svg.append(polygon_element)
 
             # Collect all points for viewport calculation
             transformed_elements.extend(faces.values())
+
+        elif element.tag.endswith("circle"):  # Handle circles
+            center, radius_x, radius_y, fill_color = extrude_circle(element)
+
+            # Add top face
+            ellipse_element = create_circle_element(
+                center, radius_x, radius_y, fill=fill_color
+            )
+            new_svg.append(ellipse_element)
+
+            # Collect the center point for viewport calculation
+            transformed_elements.append((center, radius_x, radius_y))
 
     # Adjust the SVG viewport based on the transformed elements
     min_x, min_y, width, height = calculate_viewport(transformed_elements, padding=10)
@@ -172,4 +194,4 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
     # Write the output SVG
     output_tree = ET.ElementTree(new_svg)
     output_tree.write(output_file)
-    print(f"Isometric transformed SVG with extrusion written to: {output_file}")
+    print(f"Isometric transformed SVG written to: {output_file}")
