@@ -1,1 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="-40.0 25.0 110.0 65.0"><path d="M -30.0,50.0 A 30.0,15.0 0 0,0 30.0,50.0 L 30.0,70.0 A 30.0,15.0 0 0,1 -30.0,70.0 Z" fill="blue" stroke="black" /><path d="M 0.0,65.0 A 30.0,15.0 0 0,0 60.0,65.0 L 60.0,85.0 A 30.0,15.0 0 0,1 0.0,85.0 Z" fill="green" stroke="black" /><ellipse cx="0.0" cy="50.0" rx="30.0" ry="15.0" fill="blue" stroke="black" /><ellipse cx="30.0" cy="65.0" rx="30.0" ry="15.0" fill="green" stroke="black" /></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 85">
+      <path d="M 10,25
+    A 30 15 0 0 0 70,25
+    L 70,45
+    A 30 15 0 0 1 10,45
+    Z" fill="blue" stroke="black" />
+<path d="M 40,40
+    A 30 15 0 0 0 100,40
+    L 100,60
+    A 30 15 0 0 1 40,60
+    Z" fill="green" stroke="black" />
+      <ellipse cx="40" cy="25" rx="30" ry="15" fill="blue" stroke="black"></ellipse>
+<ellipse cx="70" cy="40" rx="30" ry="15" fill="green" stroke="black"></ellipse>
+      <g>
+      <!-- Pink bounding box with border -->
+      <rect x="10" y="10" width="60" height="50" 
+            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
+      <!-- Text for distance -->
+      <text x="15" y="55" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
+        60.00
+      </text>
+    </g>
+<g>
+      <!-- Pink bounding box with border -->
+      <rect x="40" y="25" width="60" height="50" 
+            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
+      <!-- Text for distance -->
+      <text x="45" y="70" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
+        75.00
+      </text>
+    </g>
+    </svg>

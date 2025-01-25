@@ -1,1 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="-40.0 20.0 110.0 165.0"><polygon points="0.0,30.0 -30.0,45.0 -30.0,65.0 0.0,50.0" fill="green" stroke="black" /><polygon points="-30.0,45.0 20.0,70.0 20.0,90.0 -30.0,65.0" fill="green" stroke="black" /><polygon points="50.0,55.0 20.0,70.0 20.0,90.0 50.0,75.0" fill="green" stroke="black" /><polygon points="20.0,110.0 -30.0,135.0 -30.0,155.0 20.0,130.0" fill="orange" stroke="black" /><polygon points="-30.0,135.0 10.0,155.0 10.0,175.0 -30.0,155.0" fill="orange" stroke="black" /><polygon points="60.0,130.0 10.0,155.0 10.0,175.0 60.0,150.0" fill="orange" stroke="black" /><polygon points="0.0,30.0 50.0,55.0 20.0,70.0 -30.0,45.0" fill="green" stroke="black" /><polygon points="20.0,110.0 60.0,130.0 10.0,155.0 -30.0,135.0" fill="orange" stroke="black" /></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 165">
+      <polygon points="40,10 10,25 10,45 40,30" fill="green" stroke="black" />
+<polygon points="10,25 60,50 60,70 10,45" fill="green" stroke="black" />
+<polygon points="90,35 60,50 60,70 90,55" fill="green" stroke="black" />
+<polygon points="60,90 10,115 10,135 60,110" fill="orange" stroke="black" />
+<polygon points="10,115 50,135 50,155 10,135" fill="orange" stroke="black" />
+<polygon points="100,110 50,135 50,155 100,130" fill="orange" stroke="black" />
+      <polygon points="40,10 90,35 60,50 10,25" fill="green" stroke="black" />
+<polygon points="60,90 100,110 50,135 10,115" fill="orange" stroke="black" />
+      <g>
+      <!-- Pink bounding box with border -->
+      <rect x="10" y="10" width="80" height="60" 
+            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
+      <!-- Text for distance -->
+      <text x="15" y="65" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
+        70.00
+      </text>
+    </g>
+<g>
+      <!-- Pink bounding box with border -->
+      <rect x="10" y="90" width="90" height="65" 
+            fill="pink" fill-opacity="0.3" stroke="pink" stroke-width="1" />
+      <!-- Text for distance -->
+      <text x="15" y="150" font-family="Helvetica" font-weight="bold" font-size="10" fill="black">
+        155.00
+      </text>
+    </g>
+    </svg>
