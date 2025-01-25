@@ -186,6 +186,8 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
 
     # Store transformed elements to calculate viewport later
     transformed_elements = []
+    walls = []  # To collect wall elements
+    roofs = []  # To collect roof elements
 
     # Create a new SVG root for the output
     ET.register_namespace("", "http://www.w3.org/2000/svg")
@@ -200,17 +202,17 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
                 element, extrusion_height=-extrusion_height
             )
 
-            # Add faces in the correct drawing order
-            for face_name in ["left", "front", "right", "top"]:
-                face_fill = (
-                    darken_color(fill_color, factor=0.8)
-                    if face_name != "top"
-                    else fill_color
-                )
+            # Add wall faces to the wall list
+            for face_name in ["left", "front", "right"]:
+                face_fill = darken_color(fill_color, factor=0.8)
                 polygon_element = create_polygon_element(
                     faces[face_name], fill=face_fill
                 )
-                new_svg.append(polygon_element)
+                walls.append(polygon_element)
+
+            # Add the top face to the roof list
+            polygon_element = create_polygon_element(faces["top"], fill=fill_color)
+            roofs.append(polygon_element)
 
             # Collect all points for viewport calculation
             transformed_elements.extend(faces.values())
@@ -220,23 +222,31 @@ def transform_svg_to_isometric(input_file, output_file, extrusion_height=20):
                 element, extrusion_height=-extrusion_height
             )
 
-            # Add top face (ellipse)
-            top_center, radius_x, radius_y = faces["top"]
-            ellipse_element = create_circle_element(
-                top_center, radius_x, radius_y, fill=fill_color
-            )
-            new_svg.append(ellipse_element)
-
-            # Add side face (path)
+            # Add the side face (wall) to the wall list
             side_fill = darken_color(fill_color, factor=0.8)
             side_path_element = ET.Element(
                 "path",
                 attrib={"d": faces["side_path"], "fill": side_fill, "stroke": "black"},
             )
-            new_svg.append(side_path_element)
+            walls.append(side_path_element)
+
+            # Add the top face (ellipse) to the roof list
+            top_center, radius_x, radius_y = faces["top"]
+            ellipse_element = create_circle_element(
+                top_center, radius_x, radius_y, fill=fill_color
+            )
+            roofs.append(ellipse_element)
 
             # Collect top ellipse for viewport calculation
             transformed_elements.append(faces["top"])
+
+    # Append wall elements first (behind)
+    for wall in walls:
+        new_svg.append(wall)
+
+    # Append roof elements second (on top)
+    for roof in roofs:
+        new_svg.append(roof)
 
     # Adjust the SVG viewport based on the transformed elements
     min_x, min_y, width, height = calculate_viewport(transformed_elements, padding=10)
