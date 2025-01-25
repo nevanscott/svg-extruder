@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 125 117.5">
-      <polygon points="40,10 10,25 10,45 40,30" fill="orange" stroke="black" />
-<polygon points="10,25 60,50 60,70 10,45" fill="orange" stroke="black" />
-<polygon points="90,35 60,50 60,70 90,55" fill="orange" stroke="black" />
+      <polygon points="40,10 10,25 10,45 40,30" fill="#cc8400" stroke="black" />
+<polygon points="10,25 60,50 60,70 10,45" fill="#cc8400" stroke="black" />
+<polygon points="90,35 60,50 60,70 90,55" fill="#cc8400" stroke="black" />
 <path d="M 65,75
     A 25 12.5 0 0 0 115,75
     L 115,95
     A 25 12.5 0 0 1 65,95
-    Z" fill="purple" stroke="black" />
+    Z" fill="#660066" stroke="black" />
       <polygon points="40,10 90,35 60,50 10,25" fill="orange" stroke="black" />
 <ellipse cx="90" cy="75" rx="25" ry="12.5" fill="purple" stroke="black"></ellipse>
       

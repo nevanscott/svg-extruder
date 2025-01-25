@@ -1,12 +1,16 @@
 import { createEllipseElement } from "./createEllipseElement.js";
 import { createPathElement } from "./createPathElement.js";
 import { transformToIsometric } from "./transformToIsometric.js";
+import { darkenColor } from "./darkenColor.js";
 
 export function extrudeCircle(circle, extrusionHeight = 20) {
   const cx = parseFloat(circle.getAttribute("cx")) || 0;
   const cy = parseFloat(circle.getAttribute("cy")) || 0;
   const r = parseFloat(circle.getAttribute("r")) || 0;
   const fillColor = circle.getAttribute("fill") || "none";
+
+  // Darken the wall color
+  const wallColor = darkenColor(fillColor, 0.8); // Slightly darker than the original color
 
   // Transform the center of the top and bottom circles to isometric
   const centerTop = transformToIsometric(cx, cy);
@@ -35,8 +39,8 @@ export function extrudeCircle(circle, extrusionHeight = 20) {
     fillColor
   );
 
-  // Create wall element
-  const wallElement = createPathElement(wallPath, fillColor);
+  // Create wall element with darkened color
+  const wallElement = createPathElement(wallPath, wallColor);
 
   // Calculate bounding box internally
   const boundingBox = {

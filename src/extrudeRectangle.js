@@ -1,6 +1,7 @@
 import { calculateBoundingBox } from "./calculateBoundingBox.js";
 import { transformToIsometric } from "./transformToIsometric.js";
 import { createPolygonElement } from "./createPolygonElement.js";
+import { darkenColor } from "./darkenColor.js";
 
 // Extrude a rectangle
 export function extrudeRectangle(rect, extrusionHeight = 20) {
@@ -10,6 +11,9 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
     const width = parseFloat(rect.getAttribute("width")) || 0;
     const height = parseFloat(rect.getAttribute("height")) || 0;
     const fillColor = rect.getAttribute("fill") || "none";
+
+    // Darken the wall color
+    const wallColor = darkenColor(fillColor, 0.8);
 
     const topLeft = [x, y];
     const topRight = [x + width, y];
@@ -38,14 +42,17 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
       -extrusionHeight
     );
 
+    // Create the roof with the original fill color
     const roof = createPolygonElement(
       [isoTopLeft, isoTopRight, isoBottomRight, isoBottomLeft],
       fillColor
     );
+
+    // Create walls with the darkened color
     const walls = [
       createPolygonElement(
         [isoTopLeft, isoBottomLeft, isoBottomLeftExtruded, isoTopLeftExtruded],
-        fillColor
+        wallColor
       ),
       createPolygonElement(
         [
@@ -54,7 +61,7 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
           isoBottomRightExtruded,
           isoBottomLeftExtruded,
         ],
-        fillColor
+        wallColor
       ),
       createPolygonElement(
         [
@@ -63,7 +70,7 @@ export function extrudeRectangle(rect, extrusionHeight = 20) {
           isoBottomRightExtruded,
           isoTopRightExtruded,
         ],
-        fillColor
+        wallColor
       ),
     ];
 

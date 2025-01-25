@@ -3,12 +3,12 @@
     A 20 10 0 0 0 50,20
     L 50,40
     A 20 10 0 0 1 10,40
-    Z" fill="red" stroke="black" />
+    Z" fill="#cc0000" stroke="black" />
 <path d="M 110,70
     A 20 10 0 0 0 150,70
     L 150,90
     A 20 10 0 0 1 110,90
-    Z" fill="blue" stroke="black" />
+    Z" fill="#0000cc" stroke="black" />
       <ellipse cx="30" cy="20" rx="20" ry="10" fill="red" stroke="black"></ellipse>
 <ellipse cx="130" cy="70" rx="20" ry="10" fill="blue" stroke="black"></ellipse>
       
