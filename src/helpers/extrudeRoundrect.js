@@ -1,7 +1,7 @@
-import { calculateBoundingBox } from "./calculateBoundingBox.js";
-import { transformToIsometric } from "./transformToIsometric.js";
-import { darkenColor } from "./darkenColor.js";
-import { createPathElement } from "./createPathElement.js"; // Assuming you have this function for paths
+import { calculateBoundingBox } from "../utils/calculateBoundingBox.js";
+import { transformToIsometric } from "../utils/transformToIsometric.js";
+import { darkenColor } from "../utils/darkenColor.js";
+import { createPathElement } from "../utils/createPathElement.js";
 
 // Extrude a rounded rectangle
 export function extrudeRoundrect(roundRect, extrusionHeight = 20) {

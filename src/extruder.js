@@ -1,8 +1,9 @@
-import { readFileSync, writeFileSync } from "fs";
+import { promises as fs } from "fs";
 import { JSDOM } from "jsdom";
-import { extrudeRectangle } from "./extrudeRectangle.js";
-import { extrudeCircle } from "./extrudeCircle.js";
-import { extrudeRoundrect } from "./extrudeRoundrect.js";
+import { extrudeRectangle } from "./helpers/extrudeRectangle.js";
+import { extrudeCircle } from "./helpers/extrudeCircle.js";
+import { extrudeRoundrect } from "./helpers/extrudeRoundrect.js";
+import { extrudePath } from "./helpers/extrudePath.js";
 
 // Debug Mode
 const DEBUG = process.argv.includes("--debug"); // Pass --debug flag to enable debugging
@@ -129,7 +130,11 @@ function offsetEllipse(element, offsetX, offsetY) {
 function offsetPolygon(pointsData, offsetX, offsetY) {
   return pointsData.replace(
     /(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)/g,
-    (match, x, _, y) => `${parseFloat(x) - offsetX},${parseFloat(y) - offsetY}`
+    (match, x, _, y) => {
+      const newX = parseFloat(x) - offsetX;
+      const newY = parseFloat(y) - offsetY;
+      return `${newX},${newY}`;
+    }
   );
 }
 
@@ -252,8 +257,12 @@ function normalizeElements(elements, offsetX, offsetY) {
 /**
  * Transforms SVG elements to isometric view
  */
-function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
-  const inputSvg = readFileSync(inputPath, "utf-8");
+async function transformSvgToIsometric(
+  inputPath,
+  outputPath,
+  extrusionHeight = 20
+) {
+  const inputSvg = await fs.readFile(inputPath, "utf-8");
 
   const dom = new JSDOM(inputSvg, { contentType: "image/svg+xml" });
   const doc = dom.window.document;
@@ -261,6 +270,7 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
   const elements = [
     ...doc.getElementsByTagName("rect"),
     ...doc.getElementsByTagName("circle"),
+    ...doc.getElementsByTagName("path"),
   ];
   if (DEBUG) console.log(`Found ${elements.length} elements to process.`);
 
@@ -279,11 +289,17 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
       let extrusionData;
 
       if (element.tagName === "rect" && element.hasAttribute("rx")) {
-        extrusionData = extrudeRoundrect(element, extrusionHeight); // Use new extruder for rounded rectangles
+        // Rounded rectangle
+        extrusionData = extrudeRoundrect(element, extrusionHeight);
       } else if (element.tagName === "rect") {
+        // Regular rectangle
         extrusionData = extrudeRectangle(element, extrusionHeight);
       } else if (element.tagName === "circle") {
+        // Circle
         extrusionData = extrudeCircle(element, extrusionHeight);
+      } else if (element.tagName === "path") {
+        // Path
+        extrusionData = extrudePath(element, extrusionHeight);
       } else {
         console.warn(`Unsupported element type: ${element.tagName}`);
         return;
@@ -353,7 +369,7 @@ function transformSvgToIsometric(inputPath, outputPath, extrusionHeight = 20) {
     </svg>
   `;
 
-  writeFileSync(outputPath, outputSvg.trim());
+  await fs.writeFile(outputPath, outputSvg.trim());
   console.log(`Isometric transformed SVG written to: ${outputPath}`);
 }
 

@@ -1,7 +1,7 @@
-import { createEllipseElement } from "./createEllipseElement.js";
-import { createPathElement } from "./createPathElement.js";
-import { transformToIsometric } from "./transformToIsometric.js";
-import { darkenColor } from "./darkenColor.js";
+import { createEllipseElement } from "../utils/createEllipseElement.js";
+import { createPathElement } from "../utils/createPathElement.js";
+import { transformToIsometric } from "../utils/transformToIsometric.js";
+import { darkenColor } from "../utils/darkenColor.js";
 
 export function extrudeCircle(circle, extrusionHeight = 20) {
   const cx = parseFloat(circle.getAttribute("cx")) || 0;

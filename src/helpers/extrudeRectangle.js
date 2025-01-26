@@ -1,7 +1,7 @@
-import { calculateBoundingBox } from "./calculateBoundingBox.js";
-import { transformToIsometric } from "./transformToIsometric.js";
-import { createPolygonElement } from "./createPolygonElement.js";
-import { darkenColor } from "./darkenColor.js";
+import { calculateBoundingBox } from "../utils/calculateBoundingBox.js";
+import { transformToIsometric } from "../utils/transformToIsometric.js";
+import { createPolygonElement } from "../utils/createPolygonElement.js";
+import { darkenColor } from "../utils/darkenColor.js";
 
 // Extrude a rectangle
 export function extrudeRectangle(rect, extrusionHeight = 20) {
