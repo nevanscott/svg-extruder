@@ -9,6 +9,9 @@ export default function createPathFromShape(shape) {
   let d = "";
 
   switch (type) {
+    case "path":
+      d = shape.getAttribute("d");
+      break;
     case "rect":
       const x = parseFloat(shape.getAttribute("x")) || 0;
       const y = parseFloat(shape.getAttribute("y")) || 0;
