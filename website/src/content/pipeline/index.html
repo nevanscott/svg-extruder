@@ -1,0 +1,18 @@
+---
+title: Pipeline
+layout: default
+---
+
+{% for test in tests %}
+<div class="pipeline">
+  <h2>{{ test.filename }}</h2>
+  <div class="row">
+    {% for step in test.steps %}
+    <figure>
+      {{ step.svg }}
+      <figcaption>{{ step.name }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>

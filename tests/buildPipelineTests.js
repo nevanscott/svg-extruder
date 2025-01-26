@@ -1,11 +1,21 @@
-import { join } from "path";
+import { join, dirname } from "path";
 import { readdir, readFile } from "fs/promises";
+import { fileURLToPath } from "url";
 
 // Define paths
-const SOURCE_DIR = join(__dirname, "tests/sources");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SOURCE_DIR = join(__dirname, "sources");
 
 // Sample pipeline steps (placeholder functions for now)
 const pipeline = [
+  {
+    name: "Original SVG",
+    step: (state) => {
+      // Placeholder: Parse SVG and convert shapes to paths
+      state.svg += `<!-- Step: Original SVG -->`;
+      return state;
+    },
+  },
   {
     name: "Convert Shapes to Paths",
     step: (state) => {
