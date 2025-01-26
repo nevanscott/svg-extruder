@@ -17,7 +17,7 @@
           --color-text: #eee;
           --color-link: #0ff;
           --color-background: #191919;
-          --color-border: #222;
+          --color-border: #333;
           --color-surface: #111;
         }
       }
@@ -76,6 +76,16 @@
       figure {
         margin: 0;
         padding: 0;
+      }
+      button {
+        background-color: var(--color-surface);
+        color: var(--color-text);
+        border-radius: 0.25rem;
+        border: solid 2px var(--color-border);
+      }
+      figcaption {
+        display: flex;
+        justify-content: space-between;
       }
     </style>
   </head>

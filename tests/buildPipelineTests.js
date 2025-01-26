@@ -1,6 +1,7 @@
 import { join, dirname } from "path";
 import { readdir, readFile } from "fs/promises";
 import { fileURLToPath } from "url";
+import convertShapesToPaths from "../src/transforms/convertShapesToPaths.js";
 
 // Define paths
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -18,8 +19,10 @@ const pipeline = [
   },
   {
     name: "Convert Shapes to Paths",
-    step: (state) => {
+    step: async (state) => {
       // Placeholder: Parse SVG and convert shapes to paths
+      state.svg = await convertShapesToPaths(state.svg);
+
       state.svg += `<!-- Step: Convert Shapes to Paths -->`;
       return state;
     },

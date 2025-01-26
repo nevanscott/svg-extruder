@@ -10,9 +10,28 @@ layout: default
     {% for step in test.steps %}
     <figure>
       {{ step.svg }}
-      <figcaption>{{ step.name }}</figcaption>
+      <figcaption>
+        {{ step.name }}
+        <button class="copy-svg">Copy SVG</button>
+      </figcaption>
     </figure>
     {% endfor %}
   </div>
-  {% endfor %}
 </div>
+{% endfor %}
+
+<script>
+  document.querySelectorAll(".copy-svg").forEach((button) => {
+    button.addEventListener("click", () => {
+      const svg = button.closest("figure").querySelector("svg");
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svg);
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = svgString;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempTextArea);
+    });
+  });
+</script>
