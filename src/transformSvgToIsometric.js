@@ -5,15 +5,13 @@ import createPathFromShape from "./utils/createPathFromShape.js";
 import { JSDOM } from "jsdom";
 import transformPathToIsometric from "./transforms/transformPathToIsometric.js";
 
-// Sample pipeline steps (placeholder functions for now)
+// Sample pipeline steps
 const pipeline = [
   {
     name: "Original SVG",
     show: true,
     step: ({ svg }) => {
-      // Pass through the original SVG
-      svg += `<!-- Step: Original SVG -->`;
-      return { svg };
+      return { svg }; // Pass through the original SVG
     },
   },
   {
@@ -28,7 +26,6 @@ const pipeline = [
           fillColor: shape.getAttribute("fill"),
         };
       });
-      svg += `<!-- Step: Split into Shapes -->`;
       return { svg, shapes };
     },
   },
@@ -36,14 +33,13 @@ const pipeline = [
     name: "Convert Shapes to Paths",
     show: true,
     step: async ({ svg, shapes }) => {
-      // Parse SVG and convert shapes to paths
+      // Convert shapes to paths
       svg = await convertShapesToPaths(svg);
 
       shapes = shapes.map(({ shape }) => {
         return createPathFromShape(shape);
       });
 
-      svg += `<!-- Step: Convert Shapes to Paths -->`;
       return { svg, shapes };
     },
   },
@@ -52,8 +48,6 @@ const pipeline = [
     show: false,
     step: ({ svg, shapes }) => {
       // Add floor and ceiling logic
-
-      // Loop through each shape
       shapes = shapes.map((shape) => {
         return {
           floor: { shape, z: 0 },
@@ -75,10 +69,8 @@ const pipeline = [
         svgElement.appendChild(ceiling.shape.cloneNode(true));
       });
 
-      // Serialize the SVG document back to a string
-      svg = dom.serialize();
+      svg = dom.serialize(); // Serialize the SVG document back to a string
 
-      svg += `<!-- Step: Construct Floor and Ceiling -->`;
       return { svg, shapes };
     },
   },
@@ -86,9 +78,7 @@ const pipeline = [
     name: "Transform to Isometric",
     show: true,
     step: ({ svg, shapes }) => {
-      // transform the paths in svg string to isometric view
-
-      // Loop through each shape
+      // Transform the paths in SVG string to isometric view
       shapes = shapes.map(({ floor, ceiling }) => {
         return {
           floor: {
@@ -116,37 +106,38 @@ const pipeline = [
         svgElement.appendChild(ceiling.shape.cloneNode(true));
       });
 
-      // Serialize the SVG document back to a string
-      svg = dom.serialize();
+      svg = dom.serialize(); // Serialize the SVG document back to a string
 
-      svg += `<!-- Step: Transform to Isometric -->`;
       return { svg, shapes };
     },
   },
   {
     name: "Identify Sharp Turn Points",
-    show: false,
+    show: true,
     step: (state) => {
       // Placeholder: Add sharp turn point detection
-      state.svg += `<!-- Step: Identify Sharp Turn Points -->`;
       return state;
     },
   },
-  // Additional steps here...
 ];
 
 async function transformSvgToIsometric(svg) {
   // Set up initial state
   let state = { svg };
 
-  // Run through each pipeline step
+  // Reusable function to decorate SVG with step comments
+  const decorateSvgWithStepName = (svg, stepNumber, name) =>
+    `${svg}<!-- Step ${stepNumber}: ${name} -->`;
+
+  // Run through each step in the pipeline
   const steps = [];
-  for (const { name, show, step } of pipeline) {
-    state = await step(state); // Process step
-    steps.push({ name, show, svg: state.svg }); // Add step output
+  for (let i = 0; i < pipeline.length; i++) {
+    const { name, show, step } = pipeline[i];
+    state = await step(state); // Process current step
+    state.svg = decorateSvgWithStepName(state.svg, i + 1, name); // Add step comment with step number
+    steps.push({ name, show, svg: state.svg }); // Collect step results
   }
 
-  return { svg, steps };
+  return { svg: state.svg, steps };
 }
-
 export { transformSvgToIsometric };
