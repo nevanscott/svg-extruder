@@ -57,7 +57,7 @@ const pipeline = [
       shapes = shapes.map((shape) => {
         return {
           floor: { shape, z: 0 },
-          ceiling: { shape, z: 40 },
+          ceiling: { shape, z: 20 },
         };
       });
 

@@ -98,24 +98,54 @@ export default function transformPathToIsometric(path, z = 0) {
         currentX += rx;
         currentY += ry;
         return `c${isoRC1x},${isoRC1y} ${isoRC2x},${isoRC2y} ${isoRX},${isoRY}`;
-      case "A": // Elliptical arc (absolute)
-        const [rx, ry, xRot, largeArc, sweep, ax, ay] = args;
-        const [isoAx, isoAy] = toIsometric(ax, ay, z);
-        const isoRx = (rx * Math.sqrt(2)) / 2; // Adjust for isometric scaling
-        const isoRy = ry * 0.5;
-        currentX = ax;
-        currentY = ay;
-        return `A${isoRx},${isoRy} ${xRot} ${largeArc},${sweep} ${isoAx},${isoAy}`;
-      case "a": // Elliptical arc (relative)
-        const [rrx, rry, rXRot, rLargeArc, rSweep, rax, ray] = args;
-        const relAx = currentX + rax;
-        const relAy = currentY + ray;
-        const [isoRelAx, isoRelAy] = toIsometric(relAx, relAy, z);
-        const isoRelRx = (rrx * Math.sqrt(2)) / 2;
-        const isoRelRy = rry * 0.5;
-        currentX = relAx;
-        currentY = relAy;
-        return `a${isoRelRx},${isoRelRy} ${rXRot} ${rLargeArc},${rSweep} ${isoRelAx},${isoRelAy}`;
+
+      case "A": {
+        // Elliptical Arc (absolute)
+        const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, x, y] = args;
+
+        // Transform the radii for isometric projection
+        const isoRx = rx * Math.SQRT1_2; // Scale rx for isometric
+        const isoRy = ry * 0.5; // Scale ry for isometric
+
+        // Transform the endpoint of the arc
+        const [isoX, isoY] = toIsometric(x, y, z);
+
+        // Transform the start point relative to the current position
+        const [isoCurrentX, isoCurrentY] = toIsometric(currentX, currentY, z);
+
+        // Update current position
+        currentX = x;
+        currentY = y;
+
+        // Return the transformed arc, ensuring continuity
+        return `M${isoCurrentX},${isoCurrentY} A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
+      }
+      case "a": {
+        // Elliptical Arc (relative)
+        const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, dx, dy] = args;
+
+        // Compute the absolute endpoint
+        const absX = currentX + dx;
+        const absY = currentY + dy;
+
+        // Transform the radii for isometric projection
+        const isoRx = rx * Math.SQRT1_2; // Scale rx for isometric
+        const isoRy = ry * 0.5; // Scale ry for isometric
+
+        // Transform the endpoint of the arc
+        const [isoX, isoY] = toIsometric(absX, absY, z);
+
+        // Transform the start point relative to the current position
+        const [isoCurrentX, isoCurrentY] = toIsometric(currentX, currentY, z);
+
+        // Update the current position
+        currentX = absX;
+        currentY = absY;
+
+        // Return the transformed arc, ensuring continuity
+        return `M${isoCurrentX},${isoCurrentY} A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
+      }
+
       case "Z": // Close path
       case "z":
         return "Z";
