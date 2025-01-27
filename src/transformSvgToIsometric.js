@@ -1,4 +1,3 @@
-import { create } from "@svgdotjs/svg.js";
 import convertShapesToPaths from "./transforms/convertShapesToPaths.js";
 import getShapesFromSvg from "./transforms/getShapesFromSvg.js";
 import createPathFromShape from "./utils/createPathFromShape.js";
