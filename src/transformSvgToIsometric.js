@@ -133,7 +133,7 @@ async function transformSvgToIsometric(svg) {
   for (let i = 0; i < pipeline.length; i++) {
     const { name, show, step } = pipeline[i];
     state = await step(state); // Process current step
-    state.svg = decorateSvgWithStepName(state.svg, i + 1, name); // Add step comment with step number
+    state.svg = decorateSvgWithStepName(state.svg, i, name); // Add step comment with step number
     steps.push({ name, show, svg: state.svg }); // Collect step results
   }
 
