@@ -44,7 +44,7 @@ const pipeline = [
   },
   {
     name: "Construct Floor and Ceiling",
-    show: false,
+    show: true,
     step: ({ svg, shapes }) => {
       // Add floor and ceiling logic
       shapes = shapes.map((shape) => {
@@ -112,7 +112,7 @@ const pipeline = [
   },
   {
     name: "Identify Sharp Turn Points",
-    show: true,
+    show: false,
     step: (state) => {
       // Placeholder: Add sharp turn point detection
       return state;
