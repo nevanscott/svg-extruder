@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.3086578651014 154.1543289325507">
+      <polygon points="NaN,NaN NaN,NaN NaN,NaN NaN,NaN" fill="#cccccc" />
+<polygon points="NaN,NaN 103.37032893255069,65.156 103.37032893255069,45.156 NaN,NaN" fill="#cccccc" />
+<polygon points="103.37032893255069,65.156 109.03832893255071,71.11 109.03832893255071,51.11 103.37032893255069,45.156" fill="#cccccc" />
+<polygon points="109.03832893255071,71.11 NaN,NaN NaN,NaN 109.03832893255071,51.11" fill="#cccccc" />
+<polygon points="NaN,NaN NaN,NaN NaN,NaN NaN,NaN" fill="#cccccc" />
+<polygon points="NaN,NaN NaN,NaN NaN,NaN NaN,NaN" fill="#cccccc" />
+<polygon points="NaN,NaN NaN,NaN NaN,NaN NaN,NaN" fill="#cccccc" />
+<path d="M104.1543289325507,46
+         L26.154328932550698,85
+         L26.154328932550698,65
+         L104.1543289325507,26
+         Z" fill="#aa0929" />
+<path d="M26.154328932550698,85
+         L73.1543289325507,108.5
+         L73.1543289325507,88.5
+         L26.154328932550698,65
+         Z" fill="#bf0a2e" />
+<path d="M151.1543289325507,69.5
+         L73.1543289325507,108.5
+         L73.1543289325507,88.5
+         L151.1543289325507,49.5
+         Z" fill="#aa0929" />
+      <path d="M104.1543289325507,46
+      L151.1543289325507,69.5
+      A24,12 0 0,1 73.1543289325507,108.5
+      L26.154328932550698,85
+      A24,12 0 0,1 104.1543289325507,46
+      Z" fill="#D50C34" />
+<polygon points="NaN,NaN NaN,NaN 103.37032893255069,45.156 109.03832893255071,51.11 NaN,NaN NaN,NaN NaN,NaN" fill="white" />
+      
+    </svg>
