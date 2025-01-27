@@ -97,26 +97,29 @@ export default function transformPathToIsometric(path, z = 0) {
       }
 
       case "A": {
-        // Elliptical Arc (absolute)
+        // Absolute elliptical arc
         const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, x, y] = args;
 
         // Transform the radii for isometric projection
-        const isoRx = rx * Math.SQRT1_2;
-        const isoRy = ry * 0.5;
+        const isoRx = rx * Math.SQRT1_2; // Scale rx for isometric
+        const isoRy = ry * 0.5; // Scale ry for isometric
 
         // Transform the endpoint of the arc
         const [isoX, isoY] = toIsometric(x, y, z);
+
+        // Transform the current position
+        const [isoCurrentX, isoCurrentY] = toIsometric(currentX, currentY, z);
 
         // Update the current position
         currentX = x;
         currentY = y;
 
-        // Return the transformed arc without redundant `L`
+        // Return the transformed arc
         return `A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
       }
 
       case "a": {
-        // Elliptical Arc (relative)
+        // Relative elliptical arc
         const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, dx, dy] = args;
 
         // Compute the absolute endpoint
@@ -124,17 +127,20 @@ export default function transformPathToIsometric(path, z = 0) {
         const absY = currentY + dy;
 
         // Transform the radii for isometric projection
-        const isoRx = rx * Math.SQRT1_2;
-        const isoRy = ry * 0.5;
+        const isoRx = rx * Math.SQRT1_2; // Scale rx for isometric
+        const isoRy = ry * 0.5; // Scale ry for isometric
 
         // Transform the endpoint of the arc
         const [isoX, isoY] = toIsometric(absX, absY, z);
+
+        // Transform the start point relative to the current position
+        const [isoCurrentX, isoCurrentY] = toIsometric(currentX, currentY, z);
 
         // Update the current position
         currentX = absX;
         currentY = absY;
 
-        // Return the transformed arc without redundant `L`
+        // Return the transformed arc
         return `A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
       }
 
