@@ -26,18 +26,18 @@ export default function createPathFromShape(shape) {
 
       if (rectRx > 0 || rectRy > 0) {
         // Rounded rectangle path
-        d = `
-        M${x + rectRx},${y} 
-        h${width - 2 * rectRx} 
-        a${rectRx},${rectRy} 0 0 1 ${rectRx},${rectRy} 
-        v${height - 2 * rectRy} 
-        a${rectRx},${rectRy} 0 0 1 -${rectRx},${rectRy} 
-        h-${width - 2 * rectRx} 
-        a${rectRx},${rectRy} 0 0 1 -${rectRx},-${rectRy} 
-        v-${height - 2 * rectRy} 
-        a${rectRx},${rectRy} 0 0 1 ${rectRx},-${rectRy} 
-        Z
-      `.trim();
+        d = [
+          `M${x + rectRx},${y}`, // Start at the top-left corner (after rx, ry)
+          `h${width - 2 * rectRx}`, // Top horizontal line
+          `a${rectRx},${rectRy} 0 0 1 ${rectRx},${rectRy}`, // Top-right corner arc
+          `v${height - 2 * rectRy}`, // Right vertical line
+          `a${rectRx},${rectRy} 0 0 1 -${rectRx},${rectRy}`, // Bottom-right corner arc
+          `h-${width - 2 * rectRx}`, // Bottom horizontal line
+          `a${rectRx},${rectRy} 0 0 1 -${rectRx},-${rectRy}`, // Bottom-left corner arc
+          `v-${height - 2 * rectRy}`, // Left vertical line
+          `a${rectRx},${rectRy} 0 0 1 ${rectRx},-${rectRy}`, // Top-left corner arc
+          `Z`, // Close the path
+        ].join(" ");
       } else {
         // Regular rectangle path
         d = `M${x},${y} h${width} v${height} h-${width} Z`;

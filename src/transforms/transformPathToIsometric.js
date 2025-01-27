@@ -99,30 +99,50 @@ export default function transformPathToIsometric(path, z = 0) {
       case "A": {
         // Elliptical Arc (absolute)
         const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, x, y] = args;
+
+        // Transform the radii for isometric projection
         const isoRx = rx * Math.SQRT1_2;
         const isoRy = ry * 0.5;
+
+        // Transform the endpoint of the arc
         const [isoX, isoY] = toIsometric(x, y, z);
+
+        // Update the current position
         currentX = x;
         currentY = y;
+
+        // Return the transformed arc without redundant `L`
         return `A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
       }
 
       case "a": {
         // Elliptical Arc (relative)
         const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, dx, dy] = args;
+
+        // Compute the absolute endpoint
         const absX = currentX + dx;
         const absY = currentY + dy;
+
+        // Transform the radii for isometric projection
         const isoRx = rx * Math.SQRT1_2;
         const isoRy = ry * 0.5;
+
+        // Transform the endpoint of the arc
         const [isoX, isoY] = toIsometric(absX, absY, z);
+
+        // Update the current position
         currentX = absX;
         currentY = absY;
+
+        // Return the transformed arc without redundant `L`
         return `A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
       }
 
       case "Z": // Close path
-      case "z":
-        return `L${toIsometric(startX, startY, z).join(",")} Z`;
+      case "z": {
+        // Ensure the close path connects back to the start point
+        return "Z";
+      }
 
       default:
         console.warn(`Unhandled command type: ${type}`);
