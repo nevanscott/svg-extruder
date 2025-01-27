@@ -1,8 +1,6 @@
 import { JSDOM } from "jsdom";
 
 export default function transformPathToIsometric(path, z = 0) {
-  console.log("---transforming the path---");
-
   const dom = new JSDOM();
   const doc = dom.window.document;
   const isometricPath = doc.createElementNS(
@@ -13,10 +11,9 @@ export default function transformPathToIsometric(path, z = 0) {
   const d = path.getAttribute("d");
   const fill = path.getAttribute("fill") || "none";
 
-  // Transform (x, y, z) to isometric coordinates
   const toIsometric = (x, y, z) => {
-    const isoX = x - y; // Isometric X
-    const isoY = (x + y) * 0.5 - z; // Isometric Y
+    const isoX = x - y;
+    const isoY = (x + y) * 0.5 - z;
     return [isoX, isoY];
   };
 
@@ -24,7 +21,9 @@ export default function transformPathToIsometric(path, z = 0) {
   if (!commands) throw new Error("Invalid path data");
 
   let currentX = 0,
-    currentY = 0;
+    currentY = 0,
+    startX = 0,
+    startY = 0;
 
   const transformedCommands = commands.map((command) => {
     const type = command[0];
@@ -32,58 +31,55 @@ export default function transformPathToIsometric(path, z = 0) {
 
     switch (type) {
       case "M": // Move to (absolute)
-        [currentX, currentY] = args; // Update the current position
+        [currentX, currentY] = args;
+        [startX, startY] = [currentX, currentY];
         return `M${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "m": // Move to (relative)
-        // Compute the absolute position by adding the delta to the current position
         currentX += args[0];
         currentY += args[1];
-        return `M${toIsometric(currentX, currentY, z).join(",")}`; // Always output absolute
+        [startX, startY] = [currentX, currentY];
+        return `M${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "L": // Line to (absolute)
-        [currentX, currentY] = args; // Update the current position
+        [currentX, currentY] = args;
         return `L${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "l": // Line to (relative)
-        // Compute the absolute position by adding the delta to the current position
-        const absX = currentX + args[0];
-        const absY = currentY + args[1];
-        const [isoX, isoY] = toIsometric(absX, absY, z);
-        currentX = absX; // Update the current position
-        currentY = absY;
-        return `L${isoX},${isoY}`; // Output as an absolute line
+        currentX += args[0];
+        currentY += args[1];
+        return `L${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "H": // Horizontal line to (absolute)
-        currentX = args[0]; // Update the current X position
+        currentX = args[0];
         return `L${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "h": // Horizontal line to (relative)
-        const absHX = currentX + args[0]; // Compute the absolute X position
-        const [isoHX, isoHY] = toIsometric(absHX, currentY, z);
-        currentX = absHX; // Update the current X position
-        return `L${isoHX},${isoHY}`; // Output as an absolute line
+        currentX += args[0];
+        return `L${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "V": // Vertical line to (absolute)
-        currentY = args[0]; // Update the current Y position
+        currentY = args[0];
         return `L${toIsometric(currentX, currentY, z).join(",")}`;
 
       case "v": // Vertical line to (relative)
-        const absVY = currentY + args[0]; // Compute the absolute Y position
-        const [isoVX, isoVY] = toIsometric(currentX, absVY, z);
-        currentY = absVY; // Update the current Y position
-        return `L${isoVX},${isoVY}`; // Output as an absolute line
+        currentY += args[0];
+        return `L${toIsometric(currentX, currentY, z).join(",")}`;
 
-      case "C": // Cubic Bézier curve (absolute)
+      case "C": {
+        // Cubic Bézier curve (absolute)
         const [c1x, c1y, c2x, c2y, x, y] = args;
         const [isoC1x, isoC1y] = toIsometric(c1x, c1y, z);
         const [isoC2x, isoC2y] = toIsometric(c2x, c2y, z);
-        const [isoXC, isoYC] = toIsometric(x, y, z);
+        const [isoX, isoY] = toIsometric(x, y, z);
         currentX = x;
         currentY = y;
-        return `C${isoC1x},${isoC1y} ${isoC2x},${isoC2y} ${isoXC},${isoYC}`;
-      case "c": // Cubic Bézier curve (relative)
-        const [rc1x, rc1y, rc2x, rc2y, rxc, ryc] = args;
+        return `C${isoC1x},${isoC1y} ${isoC2x},${isoC2y} ${isoX},${isoY}`;
+      }
+
+      case "c": {
+        // Cubic Bézier curve (relative)
+        const [rc1x, rc1y, rc2x, rc2y, dx, dy] = args;
         const [isoRC1x, isoRC1y] = toIsometric(
           currentX + rc1x,
           currentY + rc1y,
@@ -94,68 +90,46 @@ export default function transformPathToIsometric(path, z = 0) {
           currentY + rc2y,
           z
         );
-        const [isoRX, isoRY] = toIsometric(currentX + rx, currentY + ry, z);
-        currentX += rx;
-        currentY += ry;
-        return `c${isoRC1x},${isoRC1y} ${isoRC2x},${isoRC2y} ${isoRX},${isoRY}`;
+        const [isoX, isoY] = toIsometric(currentX + dx, currentY + dy, z);
+        currentX += dx;
+        currentY += dy;
+        return `C${isoRC1x},${isoRC1y} ${isoRC2x},${isoRC2y} ${isoX},${isoY}`;
+      }
 
       case "A": {
         // Elliptical Arc (absolute)
         const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, x, y] = args;
-
-        // Transform the radii for isometric projection
-        const isoRx = rx * Math.SQRT1_2; // Scale rx for isometric
-        const isoRy = ry * 0.5; // Scale ry for isometric
-
-        // Transform the endpoint of the arc
+        const isoRx = rx * Math.SQRT1_2;
+        const isoRy = ry * 0.5;
         const [isoX, isoY] = toIsometric(x, y, z);
-
-        // Transform the start point relative to the current position
-        const [isoCurrentX, isoCurrentY] = toIsometric(currentX, currentY, z);
-
-        // Update current position
         currentX = x;
         currentY = y;
-
-        // Return the transformed arc, ensuring continuity
-        return `M${isoCurrentX},${isoCurrentY} A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
+        return `A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
       }
+
       case "a": {
         // Elliptical Arc (relative)
         const [rx, ry, xAxisRotation, largeArcFlag, sweepFlag, dx, dy] = args;
-
-        // Compute the absolute endpoint
         const absX = currentX + dx;
         const absY = currentY + dy;
-
-        // Transform the radii for isometric projection
-        const isoRx = rx * Math.SQRT1_2; // Scale rx for isometric
-        const isoRy = ry * 0.5; // Scale ry for isometric
-
-        // Transform the endpoint of the arc
+        const isoRx = rx * Math.SQRT1_2;
+        const isoRy = ry * 0.5;
         const [isoX, isoY] = toIsometric(absX, absY, z);
-
-        // Transform the start point relative to the current position
-        const [isoCurrentX, isoCurrentY] = toIsometric(currentX, currentY, z);
-
-        // Update the current position
         currentX = absX;
         currentY = absY;
-
-        // Return the transformed arc, ensuring continuity
-        return `M${isoCurrentX},${isoCurrentY} A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
+        return `A${isoRx},${isoRy} ${xAxisRotation} ${largeArcFlag},${sweepFlag} ${isoX},${isoY}`;
       }
 
       case "Z": // Close path
       case "z":
-        return "Z";
+        return `L${toIsometric(startX, startY, z).join(",")} Z`;
+
       default:
         console.warn(`Unhandled command type: ${type}`);
-        return command; // Return unchanged for unhandled types
+        return command;
     }
   });
 
-  // Set the transformed path data and fill
   isometricPath.setAttribute("d", transformedCommands.join(" "));
   isometricPath.setAttribute("fill", fill);
 
