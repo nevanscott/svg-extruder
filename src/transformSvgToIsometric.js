@@ -49,7 +49,7 @@ const pipeline = [
   },
   {
     name: "Construct Floor and Ceiling",
-    show: true,
+    show: false,
     step: ({ svg, shapes }) => {
       // Add floor and ceiling logic
 
@@ -88,16 +88,6 @@ const pipeline = [
     step: ({ svg, shapes }) => {
       // transform the paths in svg string to isometric view
 
-      console.log("");
-      console.log("");
-      console.log("");
-      console.log("BEFORE TRANSFORM");
-
-      shapes.forEach(({ floor, ceiling }) => {
-        console.log("floor", floor.shape.outerHTML);
-        console.log("ceiling", ceiling.shape.outerHTML);
-      });
-
       // Loop through each shape
       shapes = shapes.map(({ floor, ceiling }) => {
         return {
@@ -110,14 +100,6 @@ const pipeline = [
             z: ceiling.z,
           },
         };
-      });
-
-      console.log("");
-      console.log("AFTER TRANSFORM");
-
-      shapes.forEach(({ floor, ceiling }) => {
-        console.log("floor", floor.shape.outerHTML);
-        console.log("ceiling", ceiling.shape.outerHTML);
       });
 
       // Render floor and ceiling shapes to the SVG
