@@ -64,7 +64,7 @@ The initial version of the extruder is working with a very limited feature set.
 The goal is to take a source "birds-eye" SVG file and extrude it into an isometric projection.
 
 - Rectangular shapes are supported
-- Circular shapes are supporten
+- Circular shapes are supported
 - Extrusions are all to the same height
 - Fill color carries over
 - Simple shading is applied to the sides of an extruded object
