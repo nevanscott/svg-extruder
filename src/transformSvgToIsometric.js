@@ -3,6 +3,7 @@ import getShapesFromSvg from "./transforms/getShapesFromSvg.js";
 import createPathFromShape from "./utils/createPathFromShape.js";
 import { JSDOM } from "jsdom";
 import transformPathToIsometric from "./transforms/transformPathToIsometric.js";
+import translateIsometricPath from "./transforms/translateIsometricPath.js";
 
 // Pipeline steps
 const pipeline = [
@@ -115,7 +116,7 @@ const pipeline = [
       shapes = shapes.map(({ floor }) => ({
         floor,
         ceiling: {
-          shape: transformPathToIsometric(floor.shape, 20), // Ceiling at height = 20
+          shape: translateIsometricPath(floor.shape, 0, 0, 20),
           z: 20,
         },
       }));
