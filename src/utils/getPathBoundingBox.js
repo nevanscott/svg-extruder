@@ -1,4 +1,4 @@
-import { SVG, Path } from "@svgdotjs/svg.js";
+import { Path } from "@svgdotjs/svg.js";
 
 /**
  * Compute the bounding box of an SVG path.
