@@ -4,6 +4,7 @@ import createPathFromShape from "./utils/createPathFromShape.js";
 import { JSDOM } from "jsdom";
 import transformPathToIsometric from "./transforms/transformPathToIsometric.js";
 import translateIsometricPath from "./transforms/translateIsometricPath.js";
+import recenterSvg from "./transforms/recenterSvg.js";
 
 // Pipeline steps
 const pipeline = [
@@ -91,6 +92,11 @@ const pipeline = [
 
       return { svg, shapes };
     },
+  },
+  {
+    name: "Recenter SVG",
+    show: true, // Showing this step for debugging
+    step: ({ svg, shapes }) => recenterSvg(svg, shapes),
   },
   {
     name: "Identify Wall Boundaries",
