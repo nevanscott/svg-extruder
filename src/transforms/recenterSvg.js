@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import translateIsometricPath from "./translateIsometricPath.js";
-import { getPathBoundingBox } from "../helpers/getPathBoundingBox.js";
+import { getPathBoundingBox } from "../utils/getPathBoundingBox.js";
 
 /**
  * Recenter an SVG based on its bounding box.
