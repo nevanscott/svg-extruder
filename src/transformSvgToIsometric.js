@@ -40,7 +40,7 @@ const pipeline = [
   },
   {
     name: "Construct the Floor",
-    show: true,
+    show: false,
     step: ({ svg, shapes }) => {
       // Assign the floor level (z=0) to all shapes
       shapes = shapes.map((shape) => ({
@@ -66,7 +66,7 @@ const pipeline = [
   },
   {
     name: "Transform the Floor to Isometric",
-    show: true,
+    show: false,
     step: ({ svg, shapes }) => {
       // Convert the floor to its isometric projection
       shapes = shapes.map(({ floor }) => ({
