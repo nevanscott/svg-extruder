@@ -1,59 +1,21 @@
+import { SVG, Path } from "@svgdotjs/svg.js";
+
 /**
- * Compute the bounding box from a path's `d` attribute.
+ * Compute the bounding box of an SVG path.
  */
 export function getPathBoundingBox(d) {
   if (!d) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 
-  const commands = d.match(/[a-zA-Z][^a-zA-Z]*/g);
-  if (!commands) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  // Create an SVG path in-memory
+  const path = new Path({ d });
 
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  let currentX = 0,
-    currentY = 0;
+  // Get the bounding box
+  const bbox = path.bbox();
 
-  commands.forEach((command) => {
-    const type = command[0];
-    const args = command.slice(1).trim().split(/[ ,]+/).map(parseFloat);
-
-    if (args.some(isNaN)) return;
-
-    let x = currentX,
-      y = currentY;
-    switch (type) {
-      case "M":
-      case "L":
-        [x, y] = args;
-        break;
-      case "C":
-        [x, y] = args.slice(-2);
-        break;
-      case "Q":
-        [x, y] = args.slice(-2);
-        break;
-      case "A":
-        [x, y] = args.slice(-2);
-        break;
-      case "H":
-        x = args[0];
-        break;
-      case "V":
-        y = args[0];
-        break;
-      default:
-        return;
-    }
-
-    minX = Math.min(minX, x);
-    minY = Math.min(minY, y);
-    maxX = Math.max(maxX, x);
-    maxY = Math.max(maxY, y);
-
-    currentX = x;
-    currentY = y;
-  });
-
-  return { minX, minY, maxX, maxY };
+  return {
+    minX: bbox.x,
+    minY: bbox.y,
+    maxX: bbox.x + bbox.width,
+    maxY: bbox.y + bbox.height,
+  };
 }
