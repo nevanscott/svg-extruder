@@ -110,7 +110,7 @@ const pipeline = [
   },
   {
     name: "Construct Ceiling",
-    show: true,
+    show: false,
     step: ({ svg, shapes }) => {
       // Add ceiling by offsetting the floor upwards
       shapes = shapes.map(({ floor }) => ({
