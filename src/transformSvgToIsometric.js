@@ -95,8 +95,22 @@ const pipeline = [
   },
   {
     name: "Recenter SVG",
-    show: true, // Showing this step for debugging
-    step: ({ svg, shapes }) => recenterSvg(svg, shapes),
+    show: true,
+    step: ({ svg, shapes }) => {
+      // Extract only the floor paths for recentering
+      const floorPaths = shapes.map(({ floor }) => floor.shape);
+
+      // Recenter SVG using only floor paths
+      const result = recenterSvg(svg, floorPaths);
+
+      // Apply updated SVG and paths back to shapes
+      return {
+        svg: result.svg,
+        shapes: shapes.map((shape, i) => ({
+          floor: { shape: result.paths[i], z: shape.floor.z },
+        })),
+      };
+    },
   },
   {
     name: "Identify Wall Boundaries",
