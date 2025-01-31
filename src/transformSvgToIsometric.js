@@ -1,12 +1,10 @@
-import convertShapesToPaths from "./transforms/convertShapesToPaths.js";
-import getShapesFromSvg from "./transforms/getShapesFromSvg.js";
-import createPathFromShape from "./utils/createPathFromShape.js";
-import { JSDOM } from "jsdom";
-import transformPathToIsometric from "./transforms/transformPathToIsometric.js";
-import translateIsometricPath from "./transforms/translateIsometricPath.js";
-import recenterSvg from "./transforms/recenterSvg.js";
-import { identifyWallBoundaries } from "./utils/identifyWallBoundaries.js";
-import { visualizeWallBoundaries } from "./utils/visualizeWallBoundaries.js";
+import splitIntoShapes from "./pipeline/splitIntoShapes.js";
+import convertShapesToPaths from "./pipeline/convertShapesToPaths.js";
+import constructFloor from "./pipeline/constructFloor.js";
+import transformFloorToIsometric from "./pipeline/transformFloorToIsometric.js";
+import recenterView from "./pipeline/recenterView.js";
+import findWallBoundaries from "./pipeline/findWallBoundaries.js";
+import constructCeiling from "./pipeline/constructCeiling.js";
 
 // Pipeline steps
 const pipeline = [
@@ -18,99 +16,32 @@ const pipeline = [
   {
     name: "Split into Shapes",
     show: false,
-    step: ({ svg, shapes = [] }) => {
-      shapes = getShapesFromSvg(svg).map((shape) => ({
-        type: shape.tagName,
-        shape,
-        fillColor: shape.getAttribute("fill"),
-      }));
-      return { svg, shapes };
-    },
+    step: splitIntoShapes,
   },
   {
     name: "Convert Shapes to Paths",
     show: false,
-    step: async ({ svg, shapes }) => {
-      svg = await convertShapesToPaths(svg);
-      shapes = shapes.map(({ shape }) => createPathFromShape(shape));
-      return { svg, shapes };
-    },
+    step: convertShapesToPaths,
   },
   {
     name: "Construct the Floor",
     show: false,
-    step: ({ svg, shapes }) => {
-      shapes = shapes.map((shape) => ({
-        floor: { shape, z: 0 },
-      }));
-
-      // Render floor shapes
-      const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-      const doc = dom.window.document;
-      const svgElement = doc.querySelector("svg");
-
-      svgElement.querySelectorAll("path").forEach((path) => path.remove());
-      shapes.forEach(({ floor }) =>
-        svgElement.appendChild(floor.shape.cloneNode(true))
-      );
-
-      return { svg: dom.serialize(), shapes };
-    },
+    step: constructFloor,
   },
   {
     name: "Transform the Floor to Isometric",
     show: false,
-    step: ({ svg, shapes }) => {
-      shapes = shapes.map(({ floor }) => ({
-        floor: {
-          shape: transformPathToIsometric(floor.shape, floor.z),
-          z: floor.z,
-        },
-      }));
-
-      const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-      const doc = dom.window.document;
-      const svgElement = doc.querySelector("svg");
-
-      svgElement.querySelectorAll("path").forEach((path) => path.remove());
-      shapes.forEach(({ floor }) =>
-        svgElement.appendChild(floor.shape.cloneNode(true))
-      );
-
-      return { svg: dom.serialize(), shapes };
-    },
+    step: transformFloorToIsometric,
   },
   {
     name: "Recenter SVG",
     show: true,
-    step: ({ svg, shapes }) => {
-      const floorPaths = shapes.map(({ floor }) => floor.shape);
-      const result = recenterSvg(svg, floorPaths);
-
-      return {
-        svg: result.svg,
-        shapes: shapes.map((shape, i) => ({
-          floor: { shape: result.paths[i], z: shape.floor.z },
-        })),
-      };
-    },
+    step: recenterView,
   },
   {
     name: "Identify Wall Boundaries",
     show: true,
-    step: (state) => {
-      const floorPaths = state.shapes.map(({ floor }) =>
-        floor.shape.getAttribute("d")
-      );
-      let boundaryPoints = [];
-
-      floorPaths.forEach((d) => {
-        boundaryPoints = boundaryPoints.concat(identifyWallBoundaries(d));
-      });
-
-      const updatedSvg = visualizeWallBoundaries(state.svg, boundaryPoints);
-      return { ...state, svg: updatedSvg };
-    },
+    step: findWallBoundaries,
   },
   {
     name: "Construct Walls",
@@ -120,25 +51,7 @@ const pipeline = [
   {
     name: "Construct Ceiling",
     show: false,
-    step: ({ svg, shapes }) => {
-      shapes = shapes.map(({ floor }) => ({
-        floor,
-        ceiling: {
-          shape: translateIsometricPath(floor.shape, 0, 0, 20),
-          z: 20,
-        },
-      }));
-
-      const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-      const doc = dom.window.document;
-      const svgElement = doc.querySelector("svg");
-
-      shapes.forEach(({ ceiling }) =>
-        svgElement.appendChild(ceiling.shape.cloneNode(true))
-      );
-
-      return { svg: dom.serialize(), shapes };
-    },
+    step: constructCeiling,
   },
 ];
 
