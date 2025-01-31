@@ -1,139 +1,65 @@
-import { SVG } from "@svgdotjs/svg.js";
-import { parsePath } from "./parsePath.js";
+import { createCanvas } from "canvas";
+import paper from "paper";
 
 /**
- * Identifies wall boundary points, including:
- * - Sharp turns (angle-based detection)
- * - Leftmost and rightmost extrema (accurately extracted from SVG.js and sampled from the path)
+ * Identifies boundary points in an SVG path:
+ * - Detects **sharp corners** (angle-based)
+ * - Finds **leftmost & rightmost extrema**
+ * - Ignores false corners from smooth transitions
  */
 export function identifyWallBoundaries(pathD) {
-  const points = parsePath(pathD);
+  const canvas = createCanvas(100, 100);
+  paper.setup(canvas);
+
+  const path = new paper.Path(pathD);
   let boundaryPoints = [];
 
-  if (points.length < 2) return boundaryPoints;
+  if (path.segments.length < 2) return boundaryPoints;
 
-  const isClosedPath =
-    points.length > 2 &&
-    points[0].x === points[points.length - 1].x &&
-    points[0].y === points[points.length - 1].y;
+  // 🔍 Detect sharp corners
+  path.segments.forEach((seg, i, arr) => {
+    if (i === 0 || i === arr.length - 1) return; // Skip first & last points
 
-  const isPolygon = points.every((p) => !p.isCurve); // No curves = polygon-like shape
+    const prev = arr[i - 1].point;
+    const curr = seg.point;
+    const next = arr[i + 1].point;
 
-  // ✅ Always include the first point for sharp-cornered shapes (polygons, rectangles)
-  if (isPolygon || !isClosedPath) {
-    boundaryPoints.push(points[0]);
-  }
+    const angle = calculateAngle(prev, curr, next);
+    const isSmooth = seg.handleIn.length > 0 || seg.handleOut.length > 0;
 
-  // 🔍 Detect sharp turns
-  for (let i = 1; i < points.length - 1; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-    const next = points[i + 1];
-
-    if (!curr.isCurve) {
-      const angle = calculateAngle(prev, curr, next);
-      if (angle < 135) {
-        boundaryPoints.push(curr);
-      }
+    if (angle < 135 && !isSmooth) {
+      boundaryPoints.push({ x: curr.x, y: curr.y });
     }
-  }
+  });
 
-  // ✅ Include the last point if it is not a closed path
-  if (!isClosedPath && points.length > 2) {
-    const last = points[points.length - 1];
-    const secondLast = points[points.length - 2];
+  // 🎯 Find leftmost & rightmost extrema
+  const extrema = getPathExtrema(path);
 
-    if (!last.isCurve) {
-      const angle = calculateAngle(secondLast, last, points[0]);
-      if (angle < 135) {
-        boundaryPoints.push(last);
-      }
+  [extrema.left, extrema.right].forEach((extremum) => {
+    if (!boundaryPoints.some((p) => Math.abs(p.x - extremum.x) < 0.01)) {
+      boundaryPoints.push(extremum);
     }
-  }
-
-  // 🎯 Get extrema using SVG.js but find the **actual** y-coordinate by sampling the path
-  const extrema = getPathExtrema(pathD);
-
-  // 🔥 Only add extrema if they are not already in the list
-  if (!boundaryPoints.some((p) => Math.abs(p.x - extrema.left.x) < 0.01)) {
-    boundaryPoints.push(extrema.left);
-  }
-  if (!boundaryPoints.some((p) => Math.abs(p.x - extrema.right.x) < 0.01)) {
-    boundaryPoints.push(extrema.right);
-  }
-
-  // 🔄 Remove duplicates
-  boundaryPoints = Array.from(new Set(boundaryPoints.map(JSON.stringify))).map(
-    JSON.parse
-  );
+  });
 
   return boundaryPoints;
 }
 
 /**
- * Uses `@svgdotjs/svg.js` to find accurate extrema (leftmost & rightmost).
- * Adjusts the y-coordinate to match the **actual path** by sampling the closest point.
+ * Finds **leftmost & rightmost extrema** using Paper.js.
  */
-function getPathExtrema(pathD) {
-  const svg = SVG().size(0, 0);
-  const path = svg.path(pathD);
-  const bbox = path.bbox();
-
-  // Sample the path at multiple points to find actual y-values at left and right extrema
-  const sampledPoints = samplePath(pathD, 100);
-
-  const leftPoint = sampledPoints.reduce((closest, p) =>
-    Math.abs(p.x - bbox.x) < Math.abs(closest.x - bbox.x) ? p : closest
-  );
-
-  const rightPoint = sampledPoints.reduce((closest, p) =>
-    Math.abs(p.x - bbox.x2) < Math.abs(closest.x - bbox.x2) ? p : closest
-  );
-
+function getPathExtrema(path) {
+  const bounds = path.bounds;
   return {
-    left: { x: bbox.x, y: leftPoint.y },
-    right: { x: bbox.x2, y: rightPoint.y },
+    left: path.getNearestPoint(new paper.Point(bounds.left, bounds.centerY)),
+    right: path.getNearestPoint(new paper.Point(bounds.right, bounds.centerY)),
   };
 }
 
 /**
- * Samples `n` points along a path to get more accurate extrema detection.
- * @param {string} pathD - The path `d` attribute
- * @param {number} numSamples - Number of points to sample along the path
- * @returns {Array} - List of sampled points with `{x, y}`
- */
-function samplePath(pathD, numSamples) {
-  const svg = SVG().size(0, 0);
-  const path = svg.path(pathD);
-  const length = path.length();
-  const sampledPoints = [];
-
-  for (let i = 0; i <= numSamples; i++) {
-    const point = path.pointAt((i / numSamples) * length);
-    sampledPoints.push({ x: point.x, y: point.y });
-  }
-
-  return sampledPoints;
-}
-
-/**
- * Calculate the angle between three points (prev, curr, next)
- * @param {Object} prev - Previous point {x, y}
- * @param {Object} curr - Current point {x, y}
- * @param {Object} next - Next point {x, y}
- * @returns {number} - Angle in degrees
+ * Calculates the angle between three points.
  */
 function calculateAngle(prev, curr, next) {
-  const dx1 = curr.x - prev.x;
-  const dy1 = curr.y - prev.y;
-  const dx2 = next.x - curr.x;
-  const dy2 = next.y - curr.y;
-
-  const dot = dx1 * dx2 + dy1 * dy2;
-  const mag1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-  const mag2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-  if (mag1 === 0 || mag2 === 0) return 180;
-
-  return (Math.acos(dot / (mag1 * mag2)) * 180) / Math.PI;
+  const v1 = prev.subtract(curr);
+  const v2 = next.subtract(curr);
+  return v1.angle - v2.angle;
 }
