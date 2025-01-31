@@ -1,4 +1,4 @@
-import { SVG, Path } from "@svgdotjs/svg.js";
+import { SVG } from "@svgdotjs/svg.js";
 import { parsePath } from "./parsePath.js";
 
 /**
@@ -17,8 +17,12 @@ export function identifyWallBoundaries(pathD) {
     points[0].x === points[points.length - 1].x &&
     points[0].y === points[points.length - 1].y;
 
-  // ✅ Always include the first point
-  boundaryPoints.push(points[0]);
+  const isPolygon = points.every((p) => !p.isCurve); // No curves = polygon-like shape
+
+  // ✅ Always include the first point for sharp-cornered shapes (polygons, rectangles)
+  if (isPolygon || !isClosedPath) {
+    boundaryPoints.push(points[0]);
+  }
 
   // 🔍 Detect sharp turns
   for (let i = 1; i < points.length - 1; i++) {
@@ -34,26 +38,27 @@ export function identifyWallBoundaries(pathD) {
     }
   }
 
-  // ✅ Check the last point
+  // ✅ Include the last point if it is not a closed path
   if (!isClosedPath && points.length > 2) {
     const last = points[points.length - 1];
     const secondLast = points[points.length - 2];
-    const first = points[0];
 
-    const angle = calculateAngle(secondLast, last, first);
-    if (angle < 135) {
-      boundaryPoints.push(last);
+    if (!last.isCurve) {
+      const angle = calculateAngle(secondLast, last, points[0]);
+      if (angle < 135) {
+        boundaryPoints.push(last);
+      }
     }
   }
 
-  // 🎯 Use @svgdotjs/svg.js to find accurate extrema
+  // 🎯 Get extrema from SVG.js (leftmost & rightmost)
   const extrema = getPathExtrema(pathD);
 
-  // 🔥 Add extrema points (leftmost & rightmost)
-  if (!boundaryPoints.some((p) => p.x === extrema.left.x)) {
+  // 🔥 Only add extrema if they are not already in the list
+  if (!boundaryPoints.some((p) => Math.abs(p.x - extrema.left.x) < 0.01)) {
     boundaryPoints.push(extrema.left);
   }
-  if (!boundaryPoints.some((p) => p.x === extrema.right.x)) {
+  if (!boundaryPoints.some((p) => Math.abs(p.x - extrema.right.x) < 0.01)) {
     boundaryPoints.push(extrema.right);
   }
 
@@ -69,10 +74,9 @@ export function identifyWallBoundaries(pathD) {
  * Uses `@svgdotjs/svg.js` to find accurate extrema (leftmost & rightmost)
  */
 function getPathExtrema(pathD) {
-  const svg = SVG().size(0, 0); // Create a temporary SVG
-  const path = svg.path(pathD); // Create an SVG path
-
-  const bbox = path.bbox(); // Get the bounding box
+  const svg = SVG().size(0, 0);
+  const path = svg.path(pathD);
+  const bbox = path.bbox();
 
   return {
     left: { x: bbox.x, y: bbox.cy },
@@ -99,7 +103,5 @@ function calculateAngle(prev, curr, next) {
 
   if (mag1 === 0 || mag2 === 0) return 180;
 
-  let angle = Math.acos(dot / (mag1 * mag2));
-
-  return (angle * 180) / Math.PI;
+  return (Math.acos(dot / (mag1 * mag2)) * 180) / Math.PI;
 }
