@@ -1,24 +1,26 @@
-import { getPathBoundingBox } from "./getPathBoundingBox.js";
+import { SVG, Path } from "@svgdotjs/svg.js";
 import { parsePath } from "./parsePath.js";
 
 /**
- * Identify key wall boundary points along a path.
+ * Identifies wall boundary points, including:
+ * - Sharp turns (angle-based detection)
+ * - Leftmost and rightmost extrema (accurately extracted from SVG.js)
  */
 export function identifyWallBoundaries(pathD) {
-  const points = parsePath(pathD); // Extract (x, y) points from path
+  const points = parsePath(pathD);
   let boundaryPoints = [];
 
-  if (points.length < 2) return boundaryPoints; // Skip if not enough points
+  if (points.length < 2) return boundaryPoints;
 
   const isClosedPath =
     points.length > 2 &&
     points[0].x === points[points.length - 1].x &&
     points[0].y === points[points.length - 1].y;
 
-  // ✅ **Always include the first point**
+  // ✅ Always include the first point
   boundaryPoints.push(points[0]);
 
-  // 🔍 **Detect sharp turns**
+  // 🔍 Detect sharp turns
   for (let i = 1; i < points.length - 1; i++) {
     const prev = points[i - 1];
     const curr = points[i];
@@ -32,7 +34,7 @@ export function identifyWallBoundaries(pathD) {
     }
   }
 
-  // ✅ **Explicitly check the last point**
+  // ✅ Check the last point
   if (!isClosedPath && points.length > 2) {
     const last = points[points.length - 1];
     const secondLast = points[points.length - 2];
@@ -44,43 +46,60 @@ export function identifyWallBoundaries(pathD) {
     }
   }
 
-  // 🔍 **Detect extrema points (leftmost and rightmost)**
-  const { minX, maxX } = getPathBoundingBox(pathD);
-  let leftmost = points[0];
-  let rightmost = points[0];
+  // 🎯 Use @svgdotjs/svg.js to find accurate extrema
+  const extrema = getPathExtrema(pathD);
 
-  for (let point of points) {
-    if (point.x < leftmost.x) leftmost = point;
-    if (point.x > rightmost.x) rightmost = point;
+  // 🔥 Add extrema points (leftmost & rightmost)
+  if (!boundaryPoints.some((p) => p.x === extrema.left.x)) {
+    boundaryPoints.push(extrema.left);
+  }
+  if (!boundaryPoints.some((p) => p.x === extrema.right.x)) {
+    boundaryPoints.push(extrema.right);
   }
 
-  // ✅ **Ensure extrema points are unique**
-  if (!boundaryPoints.some((p) => p.x === leftmost.x && p.y === leftmost.y)) {
-    boundaryPoints.push(leftmost);
-  }
-  if (!boundaryPoints.some((p) => p.x === rightmost.x && p.y === rightmost.y)) {
-    boundaryPoints.push(rightmost);
-  }
+  // 🔄 Remove duplicates
+  boundaryPoints = Array.from(new Set(boundaryPoints.map(JSON.stringify))).map(
+    JSON.parse
+  );
 
   return boundaryPoints;
 }
 
 /**
- * Calculate the angle between three points (prev → curr → next)
- * @returns Angle in degrees
+ * Uses `@svgdotjs/svg.js` to find accurate extrema (leftmost & rightmost)
  */
-function calculateAngle(p1, p2, p3) {
-  const dx1 = p1.x - p2.x;
-  const dy1 = p1.y - p2.y;
-  const dx2 = p3.x - p2.x;
-  const dy2 = p3.y - p2.y;
+function getPathExtrema(pathD) {
+  const svg = SVG().size(0, 0); // Create a temporary SVG
+  const path = svg.path(pathD); // Create an SVG path
 
-  const dot = dx1 * dx2 + dy1 * dy2; // Dot product
+  const bbox = path.bbox(); // Get the bounding box
+
+  return {
+    left: { x: bbox.x, y: bbox.cy },
+    right: { x: bbox.x2, y: bbox.cy },
+  };
+}
+
+/**
+ * Calculate the angle between three points (prev, curr, next)
+ * @param {Object} prev - Previous point {x, y}
+ * @param {Object} curr - Current point {x, y}
+ * @param {Object} next - Next point {x, y}
+ * @returns {number} - Angle in degrees
+ */
+function calculateAngle(prev, curr, next) {
+  const dx1 = curr.x - prev.x;
+  const dy1 = curr.y - prev.y;
+  const dx2 = next.x - curr.x;
+  const dy2 = next.y - curr.y;
+
+  const dot = dx1 * dx2 + dy1 * dy2;
   const mag1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
   const mag2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
 
-  if (mag1 === 0 || mag2 === 0) return 180; // Avoid division by zero
+  if (mag1 === 0 || mag2 === 0) return 180;
 
-  const cosine = dot / (mag1 * mag2);
-  return Math.acos(Math.max(-1, Math.min(1, cosine))) * (180 / Math.PI); // Convert to degrees
+  let angle = Math.acos(dot / (mag1 * mag2));
+
+  return (angle * 180) / Math.PI;
 }
