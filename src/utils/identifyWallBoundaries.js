@@ -4,7 +4,7 @@ import { parsePath } from "./parsePath.js";
 /**
  * Identifies wall boundary points, including:
  * - Sharp turns (angle-based detection)
- * - Leftmost and rightmost extrema (accurately extracted from SVG.js)
+ * - Leftmost and rightmost extrema (accurately extracted from SVG.js and sampled from the path)
  */
 export function identifyWallBoundaries(pathD) {
   const points = parsePath(pathD);
@@ -51,7 +51,7 @@ export function identifyWallBoundaries(pathD) {
     }
   }
 
-  // 🎯 Get extrema from SVG.js (leftmost & rightmost)
+  // 🎯 Get extrema using SVG.js but find the **actual** y-coordinate by sampling the path
   const extrema = getPathExtrema(pathD);
 
   // 🔥 Only add extrema if they are not already in the list
@@ -71,17 +71,49 @@ export function identifyWallBoundaries(pathD) {
 }
 
 /**
- * Uses `@svgdotjs/svg.js` to find accurate extrema (leftmost & rightmost)
+ * Uses `@svgdotjs/svg.js` to find accurate extrema (leftmost & rightmost).
+ * Adjusts the y-coordinate to match the **actual path** by sampling the closest point.
  */
 function getPathExtrema(pathD) {
   const svg = SVG().size(0, 0);
   const path = svg.path(pathD);
   const bbox = path.bbox();
 
+  // Sample the path at multiple points to find actual y-values at left and right extrema
+  const sampledPoints = samplePath(pathD, 100);
+
+  const leftPoint = sampledPoints.reduce((closest, p) =>
+    Math.abs(p.x - bbox.x) < Math.abs(closest.x - bbox.x) ? p : closest
+  );
+
+  const rightPoint = sampledPoints.reduce((closest, p) =>
+    Math.abs(p.x - bbox.x2) < Math.abs(closest.x - bbox.x2) ? p : closest
+  );
+
   return {
-    left: { x: bbox.x, y: bbox.cy },
-    right: { x: bbox.x2, y: bbox.cy },
+    left: { x: bbox.x, y: leftPoint.y },
+    right: { x: bbox.x2, y: rightPoint.y },
   };
+}
+
+/**
+ * Samples `n` points along a path to get more accurate extrema detection.
+ * @param {string} pathD - The path `d` attribute
+ * @param {number} numSamples - Number of points to sample along the path
+ * @returns {Array} - List of sampled points with `{x, y}`
+ */
+function samplePath(pathD, numSamples) {
+  const svg = SVG().size(0, 0);
+  const path = svg.path(pathD);
+  const length = path.length();
+  const sampledPoints = [];
+
+  for (let i = 0; i <= numSamples; i++) {
+    const point = path.pointAt((i / numSamples) * length);
+    sampledPoints.push({ x: point.x, y: point.y });
+  }
+
+  return sampledPoints;
 }
 
 /**
