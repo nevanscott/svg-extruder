@@ -5,21 +5,20 @@ import { JSDOM } from "jsdom";
 import transformPathToIsometric from "./transforms/transformPathToIsometric.js";
 import translateIsometricPath from "./transforms/translateIsometricPath.js";
 import recenterSvg from "./transforms/recenterSvg.js";
+import { identifyWallBoundaries } from "./utils/identifyWallBoundaries.js";
+import { visualizeWallBoundaries } from "./utils/visualizeWallBoundaries.js";
 
 // Pipeline steps
 const pipeline = [
   {
     name: "Original SVG",
     show: true,
-    step: ({ svg }) => {
-      return { svg }; // Pass through the original SVG
-    },
+    step: ({ svg }) => ({ svg }), // Pass through original SVG
   },
   {
     name: "Split into Shapes",
     show: false,
     step: ({ svg, shapes = [] }) => {
-      // Extract individual shapes from the SVG
       shapes = getShapesFromSvg(svg).map((shape) => ({
         type: shape.tagName,
         shape,
@@ -32,7 +31,6 @@ const pipeline = [
     name: "Convert Shapes to Paths",
     show: false,
     step: async ({ svg, shapes }) => {
-      // Convert all shapes into path elements
       svg = await convertShapesToPaths(svg);
       shapes = shapes.map(({ shape }) => createPathFromShape(shape));
       return { svg, shapes };
@@ -42,33 +40,27 @@ const pipeline = [
     name: "Construct the Floor",
     show: false,
     step: ({ svg, shapes }) => {
-      // Assign the floor level (z=0) to all shapes
       shapes = shapes.map((shape) => ({
         floor: { shape, z: 0 },
       }));
 
-      // Render floor shapes to the SVG
+      // Render floor shapes
       const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
       const doc = dom.window.document;
       const svgElement = doc.querySelector("svg");
 
-      // Remove any existing paths
       svgElement.querySelectorAll("path").forEach((path) => path.remove());
+      shapes.forEach(({ floor }) =>
+        svgElement.appendChild(floor.shape.cloneNode(true))
+      );
 
-      shapes.forEach(({ floor }) => {
-        svgElement.appendChild(floor.shape.cloneNode(true));
-      });
-
-      svg = dom.serialize(); // Serialize updated SVG
-
-      return { svg, shapes };
+      return { svg: dom.serialize(), shapes };
     },
   },
   {
     name: "Transform the Floor to Isometric",
     show: false,
     step: ({ svg, shapes }) => {
-      // Convert the floor to its isometric projection
       shapes = shapes.map(({ floor }) => ({
         floor: {
           shape: transformPathToIsometric(floor.shape, floor.z),
@@ -76,34 +68,25 @@ const pipeline = [
         },
       }));
 
-      // Render transformed floor shapes to the SVG
       const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
       const doc = dom.window.document;
       const svgElement = doc.querySelector("svg");
 
-      // Remove any existing paths
       svgElement.querySelectorAll("path").forEach((path) => path.remove());
+      shapes.forEach(({ floor }) =>
+        svgElement.appendChild(floor.shape.cloneNode(true))
+      );
 
-      shapes.forEach(({ floor }) => {
-        svgElement.appendChild(floor.shape.cloneNode(true));
-      });
-
-      svg = dom.serialize(); // Serialize updated SVG
-
-      return { svg, shapes };
+      return { svg: dom.serialize(), shapes };
     },
   },
   {
     name: "Recenter SVG",
     show: true,
     step: ({ svg, shapes }) => {
-      // Extract only the floor paths for recentering
       const floorPaths = shapes.map(({ floor }) => floor.shape);
-
-      // Recenter SVG using only floor paths
       const result = recenterSvg(svg, floorPaths);
 
-      // Apply updated SVG and paths back to shapes
       return {
         svg: result.svg,
         shapes: shapes.map((shape, i) => ({
@@ -116,23 +99,28 @@ const pipeline = [
     name: "Identify Wall Boundaries",
     show: true,
     step: (state) => {
-      // Placeholder: Identify where walls should be constructed
-      return state;
+      const floorPaths = state.shapes.map(({ floor }) =>
+        floor.shape.getAttribute("d")
+      );
+      let boundaryPoints = [];
+
+      floorPaths.forEach((d) => {
+        boundaryPoints = boundaryPoints.concat(identifyWallBoundaries(d));
+      });
+
+      const updatedSvg = visualizeWallBoundaries(state.svg, boundaryPoints);
+      return { ...state, svg: updatedSvg };
     },
   },
   {
     name: "Construct Walls",
     show: false,
-    step: (state) => {
-      // Placeholder: Construct walls between floor and ceiling edges
-      return state;
-    },
+    step: (state) => state, // Placeholder
   },
   {
     name: "Construct Ceiling",
     show: false,
     step: ({ svg, shapes }) => {
-      // Add ceiling by offsetting the floor upwards
       shapes = shapes.map(({ floor }) => ({
         floor,
         ceiling: {
@@ -141,38 +129,32 @@ const pipeline = [
         },
       }));
 
-      // Render ceiling shapes to the SVG
       const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
       const doc = dom.window.document;
       const svgElement = doc.querySelector("svg");
 
-      shapes.forEach(({ ceiling }) => {
-        svgElement.appendChild(ceiling.shape.cloneNode(true));
-      });
+      shapes.forEach(({ ceiling }) =>
+        svgElement.appendChild(ceiling.shape.cloneNode(true))
+      );
 
-      svg = dom.serialize(); // Serialize updated SVG
-
-      return { svg, shapes };
+      return { svg: dom.serialize(), shapes };
     },
   },
 ];
 
 // Function to run the pipeline
 async function transformSvgToIsometric(svg) {
-  // Initialize state
   let state = { svg };
 
-  // Utility function to add step comments
   const decorateSvgWithStepName = (svg, stepNumber, name) =>
     `${svg}<!-- Step ${stepNumber}: ${name} -->`;
 
-  // Run through each step in the pipeline
   const steps = [];
   for (let i = 0; i < pipeline.length; i++) {
     const { name, show, step } = pipeline[i];
-    state = await step(state); // Process current step
-    state.svg = decorateSvgWithStepName(state.svg, i, name); // Add step comment
-    steps.push({ name, show, svg: state.svg }); // Store step output
+    state = await step(state);
+    state.svg = decorateSvgWithStepName(state.svg, i, name);
+    steps.push({ name, show, svg: state.svg });
   }
 
   return { svg: state.svg, steps };
