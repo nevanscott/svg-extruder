@@ -1,6 +1,7 @@
 import { JSDOM } from "jsdom";
 import paper from "paper";
 import { extractSegment } from "../utils/extractSegment.js";
+import { darkenColor } from "../utils/darkenColor.js";
 
 export default ({ svg, shapes }) => {
   const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
@@ -8,7 +9,7 @@ export default ({ svg, shapes }) => {
   const svgElement = doc.querySelector("svg");
 
   const updatedShapes = shapes.map((shape) => {
-    const { floor, wallBounds, z = 20, color = "gray" } = shape;
+    const { floor, wallBounds, z = 20 } = shape;
 
     if (!floor || !wallBounds || wallBounds.length < 2) return shape;
 
@@ -17,6 +18,10 @@ export default ({ svg, shapes }) => {
     // ✅ Extract SVG path data from floor shape
     const pathData = floor.shape.getAttribute("d");
     if (!pathData) return shape;
+
+    // ✅ Extract fill color from the floor shape
+    const floorColor = floor.shape.getAttribute("fill") || "gray";
+    const wallColor = darkenColor(floorColor);
 
     // ✅ Convert SVG pathData into a Paper.js Path
     paper.setup(new paper.Size(100, 100));
@@ -74,7 +79,7 @@ export default ({ svg, shapes }) => {
         "path"
       );
       wallElement.setAttribute("d", wallD);
-      wallElement.setAttribute("fill", color);
+      wallElement.setAttribute("fill", wallColor);
       wallElement.setAttribute("opacity", "0.5");
       wallElement.setAttribute("stroke", "black");
       wallElement.setAttribute("stroke-width", "0.5");
