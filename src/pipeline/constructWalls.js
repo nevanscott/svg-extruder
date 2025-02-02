@@ -7,18 +7,11 @@ export default ({ svg, shapes }) => {
   const svgElement = doc.querySelector("svg");
 
   const updatedShapes = shapes.map((shape) => {
-    const {
-      floor,
-      wallBounds,
-      z = 20,
-      isClosed = false,
-      color = "gray",
-    } = shape;
+    const { floor, wallBounds, z = 20, color = "gray" } = shape;
 
     if (!floor || !wallBounds || wallBounds.length < 2) return shape;
 
     let walls = [];
-    const bounds = isClosed ? [...wallBounds, wallBounds[0]] : wallBounds;
 
     // ✅ Extract SVG path data from floor shape
     const pathData = floor.shape.getAttribute("d");
@@ -28,6 +21,15 @@ export default ({ svg, shapes }) => {
     paper.setup(new paper.Size(100, 100));
     const floorPath = new paper.Path(pathData);
     if (floorPath.segments.length < 2) return shape;
+
+    // 🔄 Check if the floor shape is closed
+    const isClosed = floorPath.closed;
+    const bounds = [...wallBounds];
+
+    // ✅ If the floor shape is closed, explicitly add the last segment back to the start
+    if (isClosed) {
+      bounds.push(bounds[0]); // Close the loop
+    }
 
     for (let i = 0; i < bounds.length - 1; i++) {
       const start = bounds[i];
