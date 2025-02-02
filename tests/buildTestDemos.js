@@ -33,7 +33,7 @@ export async function buildTestDemos() {
         const inputFile = join(sourceDir, filename);
         const outputFile = join(outputDir, filename);
 
-        console.log(`Processing ${inputFile} -> ${outputFile}`);
+        // console.log(`Processing ${inputFile} -> ${outputFile}`);
         try {
           await transformSvgToIsometric(inputFile, outputFile); // Transform the SVG
 

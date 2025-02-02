@@ -68,8 +68,8 @@ async function transformSvgToIsometric(svg) {
     const { name, show, step } = pipeline[i];
     state = await step(state);
     state.svg = decorateSvgWithStepName(state.svg, i, name);
-    console.log(`✅ Step ${i}: ${name}`);
-    console.log(state.svg);
+    // console.log(`✅ Step ${i}: ${name}`);
+    // console.log(state.svg);
     steps.push({ name, show, svg: state.svg });
   }
 
