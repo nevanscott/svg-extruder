@@ -36,8 +36,17 @@ export default ({ svg, shapes }) => {
       const start = bounds[i];
       const end = bounds[i + 1];
 
+      // 🎯 Determine whether to reverse the longer segment for the final wall
+      const isFinalWall = isClosed && bounds.length === 3 && i === 1;
+      const reverseLonger = isFinalWall ? true : false;
+
       // 🎯 Extract bottom edge from the floor path
-      const bottomSegment = extractSegment(floorPath, start, end);
+      const bottomSegment = extractSegment(
+        floorPath,
+        start,
+        end,
+        reverseLonger
+      );
       if (!bottomSegment) continue;
 
       // 🎯 Create the top edge by offsetting the bottom edge upward by `z`
@@ -71,37 +80,6 @@ export default ({ svg, shapes }) => {
       wallElement.setAttribute("stroke-width", "0.5");
 
       svgElement.appendChild(wallElement);
-
-      // 🔴🔵 DEBUG: If there are exactly 2 boundaries, draw bottom edges differently
-      if (bounds.length === 3) {
-        for (let i = 0; i < 2; i++) {
-          const strokeColor = i === 0 ? "red" : "blue"; // First wall red, second wall blue
-
-          // ✅ First segment follows standard order, second segment follows the opposite
-          let debugSegment = extractSegment(
-            floorPath,
-            bounds[i],
-            bounds[i + 1],
-            i === 1
-          );
-
-          if (debugSegment) {
-            const debugEdge = doc.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "path"
-            );
-            debugEdge.setAttribute(
-              "d",
-              `M${debugSegment.firstSegment.point.x},${debugSegment.firstSegment.point.y} ${debugSegment.pathData}`
-            );
-            debugEdge.setAttribute("stroke", strokeColor);
-            debugEdge.setAttribute("stroke-width", "1.5");
-            debugEdge.setAttribute("fill", "none");
-
-            svgElement.appendChild(debugEdge);
-          }
-        }
-      }
     }
 
     return { ...shape, walls };
