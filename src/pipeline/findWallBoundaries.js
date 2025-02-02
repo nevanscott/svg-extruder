@@ -12,9 +12,11 @@ export default ({ svg, shapes }) => {
     };
   });
 
-  // Optional: Visualize boundaries for debugging
-  const boundaryPoints = updatedShapes.flatMap(({ wallBounds }) => wallBounds);
-  const updatedSvg = visualizeWallBoundaries(svg, boundaryPoints);
+  // Apply visualization per shape so each has its own numbering
+  let updatedSvg = svg;
+  updatedShapes.forEach(({ wallBounds }, index) => {
+    updatedSvg = visualizeWallBoundaries(updatedSvg, wallBounds, index);
+  });
 
   return { svg: updatedSvg, shapes: updatedShapes };
 };
