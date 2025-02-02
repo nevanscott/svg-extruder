@@ -21,3 +21,19 @@ layout: default
     {% endif %} {% endfor %}
   </div>
 </div>
+
+<script>
+  document.querySelectorAll(".copy-svg").forEach((button) => {
+    button.addEventListener("click", () => {
+      const svg = button.closest("figure").querySelector("svg");
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svg);
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = svgString;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempTextArea);
+    });
+  });
+</script>
