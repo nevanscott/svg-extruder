@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom";
 import paper from "paper";
+import { extractSegment } from "../utils/extractSegment.js";
 
 export default ({ svg, shapes }) => {
   const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
@@ -70,6 +71,37 @@ export default ({ svg, shapes }) => {
       wallElement.setAttribute("stroke-width", "0.5");
 
       svgElement.appendChild(wallElement);
+
+      // 🔴🔵 DEBUG: If there are exactly 2 boundaries, draw bottom edges differently
+      if (bounds.length === 3) {
+        for (let i = 0; i < 2; i++) {
+          const strokeColor = i === 0 ? "red" : "blue"; // First wall red, second wall blue
+
+          // ✅ First segment follows standard order, second segment follows the opposite
+          let debugSegment = extractSegment(
+            floorPath,
+            bounds[i],
+            bounds[i + 1],
+            i === 1
+          );
+
+          if (debugSegment) {
+            const debugEdge = doc.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "path"
+            );
+            debugEdge.setAttribute(
+              "d",
+              `M${debugSegment.firstSegment.point.x},${debugSegment.firstSegment.point.y} ${debugSegment.pathData}`
+            );
+            debugEdge.setAttribute("stroke", strokeColor);
+            debugEdge.setAttribute("stroke-width", "1.5");
+            debugEdge.setAttribute("fill", "none");
+
+            svgElement.appendChild(debugEdge);
+          }
+        }
+      }
     }
 
     return { ...shape, walls };
@@ -77,37 +109,3 @@ export default ({ svg, shapes }) => {
 
   return { svg: dom.serialize(), shapes: updatedShapes };
 };
-
-/**
- * Extracts the segment of a Paper.js path between two points.
- */
-function extractSegment(path, start, end) {
-  if (!path || path.segments.length < 2) return null;
-
-  let startPoint = new paper.Point(start.x, start.y);
-  let endPoint = new paper.Point(end.x, end.y);
-
-  let startOffset = path.getOffsetOf(startPoint);
-  let endOffset = path.getOffsetOf(endPoint);
-
-  if (isNaN(startOffset)) {
-    startPoint = path.getNearestPoint(startPoint);
-    startOffset = path.getOffsetOf(startPoint);
-  }
-  if (isNaN(endOffset)) {
-    endPoint = path.getNearestPoint(endPoint);
-    endOffset = path.getOffsetOf(endPoint);
-  }
-
-  if (isNaN(startOffset) || isNaN(endOffset)) return null;
-  if (startOffset > endOffset)
-    [startOffset, endOffset] = [endOffset, startOffset];
-
-  try {
-    let subPath = path.clone().splitAt(startOffset);
-    if (subPath) subPath = subPath.splitAt(endOffset - startOffset);
-    return subPath?.segments.length >= 2 ? subPath : null;
-  } catch {
-    return null;
-  }
-}
