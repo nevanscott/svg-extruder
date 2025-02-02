@@ -47,7 +47,7 @@ export default ({ svg, shapes }) => {
         `🔍 Extracting bottom edge: (${start.x}, ${start.y}) → (${end.x}, ${end.y})`
       );
 
-      // 🎯 Extract the corresponding curved segment from the floor path
+      // 🎯 Extract the corresponding segment from the floor path
       const bottomSegment = extractSegment(floorPath, start, end);
       if (!bottomSegment) {
         console.warn(
@@ -85,6 +85,72 @@ export default ({ svg, shapes }) => {
 
       svgElement.appendChild(bottomEdgePath);
       svgElement.appendChild(startCircle);
+
+      // 🎯 Create the top edge by offsetting the bottom edge upward by `z`
+      const topSegment = bottomSegment.clone();
+      topSegment.translate(new paper.Point(0, -z)); // Move upward
+
+      console.log(
+        `🔴 Top edge found: Start (${topSegment.firstSegment.point.x}, ${topSegment.firstSegment.point.y}) → End (${topSegment.lastSegment.point.x}, ${topSegment.lastSegment.point.y})`
+      );
+
+      // ✅ Create a red <path> for the top edge (reversed)
+      const topEdgePath = doc.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      topEdgePath.setAttribute(
+        "d",
+        `M${topSegment.lastSegment.point.x},${topSegment.lastSegment.point.y} ${topSegment.pathData}`
+      ); // Reversed path
+      topEdgePath.setAttribute("stroke", "red");
+      topEdgePath.setAttribute("stroke-width", "1.5");
+      topEdgePath.setAttribute("fill", "none");
+
+      // ✅ Create a red circle at the start of the top edge
+      const topStartCircle = doc.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "circle"
+      );
+      topStartCircle.setAttribute("cx", topSegment.lastSegment.point.x);
+      topStartCircle.setAttribute("cy", topSegment.lastSegment.point.y);
+      topStartCircle.setAttribute("r", "3");
+      topStartCircle.setAttribute("fill", "red");
+
+      svgElement.appendChild(topEdgePath);
+      svgElement.appendChild(topStartCircle);
+
+      // 🎯 Reverse the top segment properly
+      const reversedTopSegment = topSegment.clone();
+      reversedTopSegment.reverse(); // Ensure the path is actually reversed
+
+      console.log(
+        `🔴 Corrected Top edge: Start (${reversedTopSegment.firstSegment.point.x}, ${reversedTopSegment.firstSegment.point.y}) → End (${reversedTopSegment.lastSegment.point.x}, ${reversedTopSegment.lastSegment.point.y})`
+      );
+
+      // ✅ Construct full wall shape
+      const wallD = `
+  M${bottomSegment.firstSegment.point.x},${bottomSegment.firstSegment.point.y}
+  ${bottomSegment.pathData}
+  L${reversedTopSegment.firstSegment.point.x},${reversedTopSegment.firstSegment.point.y}
+  ${reversedTopSegment.pathData}
+  L${bottomSegment.firstSegment.point.x},${bottomSegment.firstSegment.point.y}  
+`
+        .replace(/\s+/g, " ")
+        .trim();
+
+      // ✅ Create <path> for the wall
+      const wallElement = doc.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      wallElement.setAttribute("d", wallD);
+      wallElement.setAttribute("fill", color); // Uses shape's color
+      wallElement.setAttribute("opacity", "0.5"); // Semi-transparent
+      wallElement.setAttribute("stroke", "black"); // Thin black border
+      wallElement.setAttribute("stroke-width", "0.5"); // Thin stroke
+
+      svgElement.appendChild(wallElement);
     }
 
     return { ...shape, walls };
