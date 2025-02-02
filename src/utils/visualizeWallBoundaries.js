@@ -7,6 +7,14 @@ export function visualizeWallBoundaries(svg, boundaryPoints) {
   const svgElement = doc.querySelector("svg");
 
   boundaryPoints.forEach(({ x, y }, index) => {
+    // 📦 Create a group <g> to contain both the circle and text
+    const group = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+
+    // 🏷 Add data attributes for debugging
+    group.setAttribute("data-index", index + 1);
+    group.setAttribute("data-x", x);
+    group.setAttribute("data-y", y);
+
     // 🎯 Create the numbered circle
     const circle = doc.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", x);
@@ -15,7 +23,6 @@ export function visualizeWallBoundaries(svg, boundaryPoints) {
     circle.setAttribute("fill", "red"); // Main color
     circle.setAttribute("stroke", "white"); // White outline
     circle.setAttribute("stroke-width", "1"); // Thickness of the outline
-    svgElement.appendChild(circle);
 
     // 🏷 Create the number label
     const text = doc.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -26,7 +33,13 @@ export function visualizeWallBoundaries(svg, boundaryPoints) {
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("dominant-baseline", "middle");
     text.textContent = index + 1; // Start counting from 1
-    svgElement.appendChild(text);
+
+    // 📌 Append circle and text to the group
+    group.appendChild(circle);
+    group.appendChild(text);
+
+    // 📌 Append the group to the SVG
+    svgElement.appendChild(group);
   });
 
   return dom.serialize();
