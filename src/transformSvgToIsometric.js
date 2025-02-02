@@ -11,7 +11,7 @@ import constructWalls from "./pipeline/constructWalls.js";
 const pipeline = [
   {
     name: "Original SVG",
-    show: true,
+    show: false,
     step: ({ svg }) => ({ svg }), // Pass through original SVG
   },
   {
@@ -51,7 +51,7 @@ const pipeline = [
   },
   {
     name: "Construct Ceiling",
-    show: false,
+    show: true,
     step: constructCeiling,
   },
 ];

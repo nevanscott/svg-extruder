@@ -6,22 +6,31 @@ export default ({ svg, shapes }) => {
   const svgElement = doc.querySelector("svg");
 
   const updatedShapes = shapes.map((shape) => {
-    const { floor, wallBounds, z = 20 } = shape; // Default height
+    const {
+      floor,
+      wallBounds,
+      z = 20,
+      isClosed = false,
+      color = "gray",
+    } = shape; // Default color to gray if not specified
 
     if (!wallBounds || wallBounds.length < 2) return shape;
 
     let walls = [];
 
-    for (let i = 0; i < wallBounds.length - 1; i++) {
-      // ✅ Only iterate normally
-      const start = wallBounds[i];
-      const end = wallBounds[i + 1];
+    // 🔄 If shape is closed, connect last to first
+    const bounds = isClosed ? [...wallBounds, wallBounds[0]] : wallBounds;
 
-      const y1 = start.y - z;
+    for (let i = 0; i < bounds.length - 1; i++) {
+      const start = bounds[i];
+      const end = bounds[i + 1];
+
+      // ✅ Adjust Y for height offset
+      const y1 = start.y - z; // If needed, switch to `start.y + z`
       const y2 = end.y - z;
 
       console.log(
-        `🟦 Wall: (${start.x}, ${start.y}) → (${end.x}, ${end.y}) | Height: ${z}`
+        `🟦 Wall: (${start.x}, ${start.y}) → (${end.x}, ${end.y}) | Height: ${z} | Color: ${color}`
       );
 
       if (isNaN(y1) || isNaN(y2)) {
@@ -29,7 +38,7 @@ export default ({ svg, shapes }) => {
         continue;
       }
 
-      // ✅ Construct parallelogram for the wall
+      // ✅ Construct parallelogram path
       const wallD = `
         M${start.x},${start.y}
         L${end.x},${end.y}
@@ -48,12 +57,11 @@ export default ({ svg, shapes }) => {
         "path"
       );
       wallElement.setAttribute("d", wallD);
-      wallElement.setAttribute("fill", "blue");
-      wallElement.setAttribute("opacity", "0.5");
-      wallElement.setAttribute("stroke", "black");
-      wallElement.setAttribute("stroke-width", "0.5");
+      wallElement.setAttribute("fill", color); // Uses shape's color
+      wallElement.setAttribute("opacity", "0.5"); // Semi-transparent
+      // Stroke is removed
 
-      svgElement.appendChild(wallElement); // ✅ Add wall inside SVG
+      svgElement.appendChild(wallElement);
     }
 
     return { ...shape, walls };
