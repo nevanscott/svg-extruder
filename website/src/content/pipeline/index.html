@@ -5,7 +5,9 @@ layout: default
 
 {% for test in tests %}
 <div class="pipeline">
-  <h2>{{ test.filename }}</h2>
+  <h2>
+    <a href="/tests/{{ test.filename | slugify }}">{{ test.filename }}</a>
+  </h2>
   <div class="row">
     {% for step in test.steps %} {% if step.show %}
     <figure>
