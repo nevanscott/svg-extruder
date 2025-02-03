@@ -14,17 +14,29 @@ export default ({ svg, shapes }) => {
     };
   });
 
-  // ✅ Generate debug SVG with boundary visualization
+  // ✅ Generate debug SVG that includes only the floor and wall boundaries
   const debugDom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  let debugSvg = debugDom.serialize();
+  const debugDoc = debugDom.window.document;
+  const debugSvgElement = debugDoc.querySelector("svg");
 
+  // ✅ Remove all non-floor paths
+  debugSvgElement.querySelectorAll("path").forEach((path) => path.remove());
+
+  // ✅ Add only floor paths
+  shapes.forEach(({ floor }) => {
+    if (!floor?.path) return;
+    debugSvgElement.appendChild(floor.path.cloneNode(true));
+  });
+
+  // ✅ Visualize wall boundaries in debug mode
+  let debugSvg = debugDom.serialize();
   shapes.forEach(({ wallBounds }, index) => {
     debugSvg = visualizeWallBoundaries(debugSvg, wallBounds, index);
   });
 
   return {
     svg, // ✅ Keep original SVG unchanged
-    svgDebug: debugSvg, // ✅ Visualize boundaries in debug version
+    svgDebug: debugSvg, // ✅ Debug version: floors + wall boundaries only
     shapes, // ✅ Pass updated shape model
   };
 };

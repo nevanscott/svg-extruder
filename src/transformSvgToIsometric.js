@@ -35,6 +35,11 @@ const pipeline = [
     step: transformFloorToIsometric,
   },
   {
+    name: "Construct Ceiling",
+    show: true,
+    step: constructCeiling,
+  },
+  {
     name: "Recenter SVG",
     show: true,
     step: recenterView,
@@ -48,11 +53,6 @@ const pipeline = [
     name: "Construct Walls",
     show: true,
     step: constructWalls,
-  },
-  {
-    name: "Construct Ceiling",
-    show: true,
-    step: constructCeiling,
   },
 ];
 

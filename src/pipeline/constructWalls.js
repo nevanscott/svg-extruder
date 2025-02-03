@@ -4,16 +4,37 @@ import { extractSegment } from "../utils/extractSegment.js";
 import { darkenColor } from "../utils/darkenColor.js";
 
 export default ({ svg, shapes }) => {
-  const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const doc = dom.window.document;
-  const svgElement = doc.querySelector("svg");
+  // ✅ Preserve original viewBox and dimensions
+  const originalDom = new JSDOM(svg, { contentType: "image/svg+xml" });
+  const originalDoc = originalDom.window.document;
+  const originalSvg = originalDoc.querySelector("svg");
 
-  const debugDom = new JSDOM(svg, { contentType: "image/svg+xml" });
+  const viewBox = originalSvg.getAttribute("viewBox") || "0 0 100 100";
+  const width = originalSvg.getAttribute("width") || "100";
+  const height = originalSvg.getAttribute("height") || "100";
+
+  // ✅ Create new clean & debug SVGs with preserved viewBox & dimensions
+  const cleanDom = new JSDOM(
+    `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
+  );
+  const cleanDoc = cleanDom.window.document;
+  const cleanSvgElement = cleanDoc.querySelector("svg");
+
+  const debugDom = new JSDOM(
+    `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
+  );
   const debugDoc = debugDom.window.document;
   const debugSvgElement = debugDoc.querySelector("svg");
 
+  // ✅ Set viewBox & dimensions
+  [cleanSvgElement, debugSvgElement].forEach((svgEl) => {
+    svgEl.setAttribute("viewBox", viewBox);
+    svgEl.setAttribute("width", width);
+    svgEl.setAttribute("height", height);
+  });
+
   shapes = shapes.map((shape) => {
-    const { floor, wallBounds, elevation = 0, height = 20 } = shape;
+    const { floor, wallBounds, elevation = 0, height = 20, ceiling } = shape;
 
     if (!floor || !wallBounds || wallBounds.length < 2) return shape;
 
@@ -78,7 +99,7 @@ export default ({ svg, shapes }) => {
         .trim();
 
       // ✅ Create clean wall element (fully opaque)
-      const wallElement = doc.createElementNS(
+      const wallElement = cleanDoc.createElementNS(
         "http://www.w3.org/2000/svg",
         "path"
       );
@@ -87,7 +108,8 @@ export default ({ svg, shapes }) => {
       wallElement.setAttribute("stroke", "black");
       wallElement.setAttribute("stroke-width", "0.5");
 
-      svgElement.appendChild(wallElement);
+      // ✅ Append to the clean SVG (walls go on top of the floor)
+      cleanSvgElement.appendChild(wallElement);
 
       // ✅ Create debug wall element (semi-transparent)
       const debugWallElement = debugDoc.createElementNS(
@@ -113,9 +135,46 @@ export default ({ svg, shapes }) => {
     return { ...shape, walls };
   });
 
+  // ✅ First, render the **floor** in both SVGs
+  shapes.forEach(({ floor }) => {
+    if (!floor.path) return;
+
+    const floorPathClean = cleanDoc.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    floorPathClean.setAttribute("d", floor.path.getAttribute("d"));
+    floorPathClean.setAttribute("fill", floor.fillColor || "gray");
+    cleanSvgElement.prepend(floorPathClean); // ✅ Floor is drawn first
+
+    const floorPathDebug = debugDoc.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    floorPathDebug.setAttribute("d", floor.path.getAttribute("d"));
+    floorPathDebug.setAttribute("fill", floor.fillColor || "gray");
+    debugSvgElement.prepend(floorPathDebug); // ✅ Floor is drawn first
+  });
+
+  // ✅ Walls are already added **after** the floor (above)
+
+  // ✅ Finally, render the **ceiling** in the clean SVG (ceiling goes on top)
+  shapes.forEach(({ ceiling }) => {
+    if (!ceiling || !ceiling.path) return;
+
+    const ceilingPath = cleanDoc.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    ceilingPath.setAttribute("d", ceiling.path.getAttribute("d"));
+    ceilingPath.setAttribute("fill", ceiling.fillColor || "gray");
+
+    cleanSvgElement.appendChild(ceilingPath); // ✅ Ceiling is drawn last
+  });
+
   return {
-    svg: dom.serialize(), // ✅ Final version with full-opacity walls
-    svgDebug: debugDom.serialize(), // ✅ Debug version with semi-transparent walls
+    svg: cleanDom.serialize(), // ✅ Clean SVG with floor → walls → ceiling
+    svgDebug: debugDom.serialize(), // ✅ Debug SVG with floor + semi-transparent walls
     shapes,
   };
 };
