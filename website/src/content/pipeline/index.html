@@ -11,7 +11,7 @@ layout: default
   <div class="row">
     {% for step in test.steps %} {% if step.show %}
     <figure>
-      {{ step.svg }}
+      {{ step.svgDebug }}
       <figcaption>
         {{ step.name }}
         <button class="copy-svg">Copy SVG</button>

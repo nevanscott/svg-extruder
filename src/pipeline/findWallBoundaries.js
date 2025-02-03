@@ -1,22 +1,30 @@
 import { identifyWallBoundaries } from "../utils/identifyWallBoundaries.js";
 import { visualizeWallBoundaries } from "../utils/visualizeWallBoundaries.js";
+import { JSDOM } from "jsdom";
 
 export default ({ svg, shapes }) => {
-  const updatedShapes = shapes.map(({ floor }) => {
-    const pathD = floor.shape.getAttribute("d");
-    const wallBounds = identifyWallBoundaries(pathD); // Get ordered boundary points
+  // ✅ Extract wall boundaries for each floor shape
+  shapes = shapes.map((shape) => {
+    const pathD = shape.floor.path.getAttribute("d");
+    const wallBounds = identifyWallBoundaries(pathD); // ✅ Get ordered boundary points
 
     return {
-      floor,
-      wallBounds, // Store boundary points in order
+      ...shape,
+      wallBounds, // ✅ Store boundary points
     };
   });
 
-  // Apply visualization per shape so each has its own numbering
-  let updatedSvg = svg;
-  updatedShapes.forEach(({ wallBounds }, index) => {
-    updatedSvg = visualizeWallBoundaries(updatedSvg, wallBounds, index);
+  // ✅ Generate debug SVG with boundary visualization
+  const debugDom = new JSDOM(svg, { contentType: "image/svg+xml" });
+  let debugSvg = debugDom.serialize();
+
+  shapes.forEach(({ wallBounds }, index) => {
+    debugSvg = visualizeWallBoundaries(debugSvg, wallBounds, index);
   });
 
-  return { svg: updatedSvg, shapes: updatedShapes };
+  return {
+    svg, // ✅ Keep original SVG unchanged
+    svgDebug: debugSvg, // ✅ Visualize boundaries in debug version
+    shapes, // ✅ Pass updated shape model
+  };
 };

@@ -12,7 +12,7 @@ const pipeline = [
   {
     name: "Original SVG",
     show: false,
-    step: ({ svg }) => ({ svg }), // Pass through original SVG
+    step: (state) => state,
   },
   {
     name: "Split into Shapes",
@@ -56,24 +56,29 @@ const pipeline = [
   },
 ];
 
-// Function to run the pipeline
-async function transformSvgToIsometric(svg) {
-  let state = { svg };
-
-  const decorateSvgWithStepName = (svg, stepNumber, name) =>
-    `${svg}<!-- Step ${stepNumber}: ${name} -->`;
+async function transformSvgToIsometric(svg, debug = false) {
+  let state = { shapes: [], svg, svgDebug: svg, debug };
 
   const steps = [];
+
   for (let i = 0; i < pipeline.length; i++) {
     const { name, show, step } = pipeline[i];
-    state = await step(state);
-    state.svg = decorateSvgWithStepName(state.svg, i, name);
-    // console.log(`✅ Step ${i}: ${name}`);
-    // console.log(state.svg);
-    steps.push({ name, show, svg: state.svg });
+
+    // Run the pipeline step
+    const newState = await step(state);
+
+    // Ensure state updates (avoid overwriting SVG if the step doesn't modify it)
+    state = {
+      ...state,
+      ...newState,
+      svg: newState.svg || state.svg,
+      svgDebug: newState.svgDebug || state.svgDebug,
+    };
+
+    steps.push({ name, show, svg: state.svg, svgDebug: state.svgDebug });
   }
 
-  return { svg: state.svg, steps };
+  return { svg: state.svg, svgDebug: state.svgDebug, steps };
 }
 
 export { transformSvgToIsometric };
