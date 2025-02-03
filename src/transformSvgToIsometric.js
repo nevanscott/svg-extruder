@@ -6,6 +6,7 @@ import recenterView from "./pipeline/recenterView.js";
 import findWallBoundaries from "./pipeline/findWallBoundaries.js";
 import constructCeiling from "./pipeline/constructCeiling.js";
 import constructWalls from "./pipeline/constructWalls.js";
+import orderLayers from "./pipeline/orderLayers.js";
 
 // Pipeline steps
 const pipeline = [
@@ -36,12 +37,12 @@ const pipeline = [
   },
   {
     name: "Construct Ceiling",
-    show: true,
+    show: false,
     step: constructCeiling,
   },
   {
     name: "Recenter SVG",
-    show: true,
+    show: false,
     step: recenterView,
   },
   {
@@ -53,6 +54,16 @@ const pipeline = [
     name: "Construct Walls",
     show: true,
     step: constructWalls,
+  },
+  {
+    name: "Order Layers",
+    show: true,
+    step: orderLayers,
+  },
+  {
+    name: "Final SVG",
+    show: true,
+    step: ({ shapes, svg, svgDebug }) => ({ shapes, svg, svgDebug: svg }),
   },
 ];
 
