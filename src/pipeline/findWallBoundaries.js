@@ -11,6 +11,12 @@ export default ({ svg, shapes }) => {
     return {
       ...shape,
       wallBounds, // ✅ Store boundary points
+      walls: [
+        {
+          base: shape.floor.path,
+          bounds: wallBounds,
+        },
+      ],
     };
   });
 
