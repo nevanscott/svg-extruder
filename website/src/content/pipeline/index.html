@@ -3,21 +3,81 @@ title: Pipeline
 layout: default
 ---
 
+<div class="filters">
+  <details>
+    <summary>Filters</summary>
+    <p>Check the steps you want to see.</p>
+    <form>
+      {% for step in tests[0].steps %}
+      <label>
+        <input
+          type="checkbox"
+          name="{{ step.name | slugify }}"
+          {%
+          if
+          step.show
+          %}checked{%
+          endif
+          %}
+        />
+        {{ forloop.index0 }}. {{ step.name }}
+      </label>
+      {% endfor %}
+    </form>
+  </details>
+</div>
+
+<style>
+  .filters {
+    background: #111;
+    padding: 1rem;
+    position: sticky;
+    top: 0.5rem;
+    width: 100%;
+    border-radius: 0.5rem;
+  }
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #333;
+    border: solid 1px #000;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.75rem;
+  }
+  label:has(:checked) {
+    background-color: rgb(38, 10, 175);
+  }
+</style>
+
 {% for test in tests %}
 <div class="pipeline">
   <h2>
     <a href="/tests/{{ test.filename | slugify }}">{{ test.filename }}</a>
   </h2>
   <div class="row">
-    {% for step in test.steps %} {% if step.show %}
-    <figure>
+    {% for step in test.steps %}
+    <figure
+      {%
+      unless
+      step.show
+      %}hidden{%
+      endunless
+      %}
+      data-step="{{ step.name | slugify }}"
+    >
       {{ step.svgDebug }}
       <figcaption>
         {{ step.name }}
         <button class="copy-svg">Copy SVG</button>
       </figcaption>
     </figure>
-    {% endif %} {% endfor %}
+    {% endfor %}
   </div>
 </div>
 {% endfor %}
@@ -34,6 +94,51 @@ layout: default
       tempTextArea.select();
       document.execCommand("copy");
       document.body.removeChild(tempTextArea);
+    });
+  });
+
+  // Seed the localStorage based on the initial DOM state of the checkboxes
+  document
+    .querySelectorAll("form input[type='checkbox']")
+    .forEach((checkbox) => {
+      const stepName = checkbox.name;
+      if (localStorage.getItem(stepName) === null) {
+        const isChecked = checkbox.checked;
+        localStorage.setItem(stepName, isChecked);
+      }
+    });
+
+  // Load the state from localStorage when the page loads
+  document.addEventListener("DOMContentLoaded", () => {
+    document
+      .querySelectorAll("form input[type='checkbox']")
+      .forEach((checkbox) => {
+        const stepName = checkbox.name;
+        const isChecked = localStorage.getItem(stepName) === "true";
+        checkbox.checked = isChecked;
+        const steps = document.querySelectorAll(`[data-step="${stepName}"]`);
+        steps.forEach((step) => {
+          if (isChecked) {
+            step.removeAttribute("hidden");
+          } else {
+            step.setAttribute("hidden", "");
+          }
+        });
+      });
+  });
+
+  // Update the state in localStorage whenever a checkbox is toggled
+  document.querySelector("form").addEventListener("change", (event) => {
+    const stepName = event.target.name;
+    const isChecked = event.target.checked;
+    localStorage.setItem(stepName, isChecked);
+    const steps = document.querySelectorAll(`[data-step="${stepName}"]`);
+    steps.forEach((step) => {
+      if (isChecked) {
+        step.removeAttribute("hidden");
+      } else {
+        step.setAttribute("hidden", "");
+      }
     });
   });
 </script>
