@@ -43,7 +43,7 @@ export default ({ svg, shapes }) => {
     svgEl.setAttribute("height", height);
   });
 
-  // ✅ Compute and store depth values
+  // ✅ Compute and store depth and elevation values
   shapes = shapes.map((shape, index) => {
     let floorBBox = getPathBoundingBox(shape.floor.path.getAttribute("d"));
     let floorDepth = computeDepth(floorBBox, viewBox);
@@ -73,50 +73,60 @@ export default ({ svg, shapes }) => {
     };
   });
 
-  // ✅ Sort floors in increasing depth order (front-to-back)
-  const sortedFloors = [...shapes].sort(
-    (a, b) => a.floor.depth - b.floor.depth
-  );
+  // ✅ Group shapes by elevation
+  const groupedByElevation = shapes.reduce((groups, shape) => {
+    const elevation = shape.elevation;
+    if (!groups[elevation]) groups[elevation] = [];
+    groups[elevation].push(shape);
+    return groups;
+  }, {});
 
-  // ✅ Sort wall sides in **decreasing** depth order (back-to-front)
-  const sortedWallSides = [
-    ...shapes.flatMap((s) => s.walls.flatMap((w) => w.sides)),
-  ].sort((a, b) => b.depth - a.depth);
-
-  // ✅ Preserve original order for ceilings
-  const sortedCeilings = [...shapes]
-    .filter((s) => s.ceiling)
-    .sort((a, b) => a.ceiling.order - b.ceiling.order);
+  // ✅ Sort elevations ascending
+  const sortedElevations = Object.keys(groupedByElevation)
+    .map(Number)
+    .sort((a, b) => a - b);
 
   // ▶️ **Clean SVG:**
-  sortedFloors.forEach(({ floor }) => {
-    const floorPath = cleanDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    floorPath.setAttribute("d", floor.path.getAttribute("d"));
-    floorPath.setAttribute("fill", floor.fillColor || "gray");
-    cleanSvgElement.appendChild(floorPath);
-  });
+  sortedElevations.forEach((elevation) => {
+    const shapesAtElevation = groupedByElevation[elevation];
 
-  sortedWallSides.forEach((side) => {
-    const wallPath = cleanDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    wallPath.setAttribute("d", side.path.getAttribute("d"));
-    wallPath.setAttribute("fill", side.fillColor || "gray");
-    cleanSvgElement.appendChild(wallPath);
-  });
+    // Render floors first (original stacking order)
+    shapesAtElevation.forEach(({ floor }) => {
+      const floorPath = cleanDoc.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      floorPath.setAttribute("d", floor.path.getAttribute("d"));
+      floorPath.setAttribute("fill", floor.fillColor || "gray");
+      cleanSvgElement.appendChild(floorPath);
+    });
 
-  sortedCeilings.forEach(({ ceiling }) => {
-    const ceilingPath = cleanDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    ceilingPath.setAttribute("d", ceiling.path.getAttribute("d"));
-    ceilingPath.setAttribute("fill", ceiling.fillColor || "gray");
-    cleanSvgElement.appendChild(ceilingPath);
+    // Render walls next (sorted by depth within the elevation, back-to-front)
+    shapesAtElevation
+      .flatMap((shape) => shape.walls.flatMap((wall) => wall.sides))
+      .sort((a, b) => b.depth - a.depth)
+      .forEach((side) => {
+        const wallPath = cleanDoc.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        wallPath.setAttribute("d", side.path.getAttribute("d"));
+        wallPath.setAttribute("fill", side.fillColor || "gray");
+        cleanSvgElement.appendChild(wallPath);
+      });
+
+    // Render ceilings last (original stacking order)
+    shapesAtElevation.forEach(({ ceiling }) => {
+      if (ceiling) {
+        const ceilingPath = cleanDoc.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        ceilingPath.setAttribute("d", ceiling.path.getAttribute("d"));
+        ceilingPath.setAttribute("fill", ceiling.fillColor || "gray");
+        cleanSvgElement.appendChild(ceilingPath);
+      }
+    });
   });
 
   // ▶️ **Debug SVG (Semi-Transparent with Bounding Boxes & Depth Numbers)**
@@ -143,55 +153,67 @@ export default ({ svg, shapes }) => {
     return [rect, text];
   }
 
-  sortedFloors.forEach(({ floor }) => {
-    const debugFloor = debugDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    debugFloor.setAttribute("d", floor.path.getAttribute("d"));
-    debugFloor.setAttribute("fill", floor.fillColor || "gray");
-    debugFloor.setAttribute("opacity", "0.5");
-    debugSvgElement.appendChild(debugFloor);
+  sortedElevations.forEach((elevation) => {
+    const shapesAtElevation = groupedByElevation[elevation];
 
-    const bboxElements = drawBBoxWithDepth(
-      getPathBoundingBox(floor.path.getAttribute("d")),
-      floor.depth,
-      "red",
-      debugDoc
-    );
-    bboxElements.forEach((el) => debugSvgElement.appendChild(el));
-  });
+    // Debug floors
+    shapesAtElevation.forEach(({ floor }) => {
+      const debugFloor = debugDoc.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      debugFloor.setAttribute("d", floor.path.getAttribute("d"));
+      debugFloor.setAttribute("fill", floor.fillColor || "gray");
+      debugFloor.setAttribute("opacity", "0.5");
+      debugSvgElement.appendChild(debugFloor);
 
-  sortedWallSides.forEach((side) => {
-    const debugWall = debugDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    debugWall.setAttribute("d", side.path.getAttribute("d"));
-    debugWall.setAttribute("fill", side.fillColor || "gray");
-    debugWall.setAttribute("opacity", "0.5");
-    debugWall.setAttribute("stroke", "black");
-    debugWall.setAttribute("stroke-width", "0.5");
-    debugSvgElement.appendChild(debugWall);
+      const floorBBoxElements = drawBBoxWithDepth(
+        getPathBoundingBox(floor.path.getAttribute("d")),
+        floor.depth,
+        "red",
+        debugDoc
+      );
+      floorBBoxElements.forEach((el) => debugSvgElement.appendChild(el));
+    });
 
-    const bboxElements = drawBBoxWithDepth(
-      getPathBoundingBox(side.path.getAttribute("d")),
-      side.depth,
-      "blue",
-      debugDoc
-    );
-    bboxElements.forEach((el) => debugSvgElement.appendChild(el));
-  });
+    // Debug walls
+    shapesAtElevation
+      .flatMap((shape) => shape.walls.flatMap((wall) => wall.sides))
+      .sort((a, b) => b.depth - a.depth)
+      .forEach((side) => {
+        const debugWall = debugDoc.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        debugWall.setAttribute("d", side.path.getAttribute("d"));
+        debugWall.setAttribute("fill", side.fillColor || "gray");
+        debugWall.setAttribute("opacity", "0.5");
+        debugWall.setAttribute("stroke", "black");
+        debugWall.setAttribute("stroke-width", "0.5");
+        debugSvgElement.appendChild(debugWall);
 
-  sortedCeilings.forEach(({ ceiling }) => {
-    const debugCeiling = debugDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    debugCeiling.setAttribute("d", ceiling.path.getAttribute("d"));
-    debugCeiling.setAttribute("fill", ceiling.fillColor || "gray");
-    debugCeiling.setAttribute("opacity", "0.5");
-    debugSvgElement.appendChild(debugCeiling);
+        const wallBBoxElements = drawBBoxWithDepth(
+          getPathBoundingBox(side.path.getAttribute("d")),
+          side.depth,
+          "blue",
+          debugDoc
+        );
+        wallBBoxElements.forEach((el) => debugSvgElement.appendChild(el));
+      });
+
+    // Debug ceilings
+    shapesAtElevation.forEach(({ ceiling }) => {
+      if (ceiling) {
+        const debugCeiling = debugDoc.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        debugCeiling.setAttribute("d", ceiling.path.getAttribute("d"));
+        debugCeiling.setAttribute("fill", ceiling.fillColor || "gray");
+        debugCeiling.setAttribute("opacity", "0.5");
+        debugSvgElement.appendChild(debugCeiling);
+      }
+    });
   });
 
   return {

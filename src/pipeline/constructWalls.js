@@ -40,7 +40,7 @@ export default ({ svg, shapes }) => {
 
     // ✅ Extract fill color from the floor shape
     const floorColor = floor.fillColor || "gray";
-    const wallColor = darkenColor(floorColor);
+    const wallColor = darkenColor(floorColor, 0.8);
 
     const updatedWalls = walls.map((wall) => {
       const { base, bounds } = wall;

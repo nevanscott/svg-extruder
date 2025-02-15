@@ -24,12 +24,12 @@ const pipeline = [
   },
   {
     name: "Convert Shapes to Paths",
-    show: true,
+    show: false,
     step: convertShapesToPaths,
   },
   {
     name: "Outline Stroke Shapes",
-    show: true,
+    show: false,
     step: outlineStrokeShapes,
   },
   {
@@ -59,7 +59,7 @@ const pipeline = [
   },
   {
     name: "Identify Wall Boundaries",
-    show: false,
+    show: true,
     step: findWallBoundaries,
   },
   {
