@@ -62,13 +62,14 @@ export default async ({ svg, svgDebug, shapes }) => {
           "path"
         );
         newPathElement.setAttribute("d", pathData);
-        newPathElement.setAttribute("fill", strokeColor); // Stroke color becomes the fill
+        newPathElement.setAttribute("fill", strokeColor); // The stroke color becomes the fill
         newPathElement.setAttribute("stroke", "none"); // Remove the stroke
 
+        // Update the shape model
         return {
           ...shape,
-          path: newPathElement,
-          rawElement: newPathElement, // Update the rawElement reference
+          path: newPathElement, // Updated path element with outlines
+          fillColor: strokeColor, // Update fill color to the stroke color
         };
       }
 
