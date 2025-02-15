@@ -8,6 +8,7 @@ import findWallBoundaries from "./pipeline/findWallBoundaries.js";
 import constructCeiling from "./pipeline/constructCeiling.js";
 import constructWalls from "./pipeline/constructWalls.js";
 import orderLayers from "./pipeline/orderLayers.js";
+import outlineStrokeShapes from "./pipeline/outlineStrokeShapes.js";
 
 // Pipeline steps
 const pipeline = [
@@ -23,8 +24,13 @@ const pipeline = [
   },
   {
     name: "Convert Shapes to Paths",
-    show: false,
+    show: true,
     step: convertShapesToPaths,
+  },
+  {
+    name: "Outline Stroke Shapes",
+    show: true,
+    step: outlineStrokeShapes,
   },
   {
     name: "Construct the Floor",
@@ -53,12 +59,12 @@ const pipeline = [
   },
   {
     name: "Identify Wall Boundaries",
-    show: true,
+    show: false,
     step: findWallBoundaries,
   },
   {
     name: "Construct Walls",
-    show: true,
+    show: false,
     step: constructWalls,
   },
   {
