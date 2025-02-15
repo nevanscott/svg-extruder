@@ -3,24 +3,28 @@ import { visualizeWallBoundaries } from "../utils/visualizeWallBoundaries.js";
 import { JSDOM } from "jsdom";
 
 export default ({ svg, shapes }) => {
-  // ✅ Extract wall boundaries for each floor shape
+  // ✅ Process walls and extract wall boundaries
   shapes = shapes.map((shape) => {
-    const pathD = shape.floor.path.getAttribute("d");
-    const wallBounds = identifyWallBoundaries(pathD); // ✅ Get ordered boundary points
+    const updatedWalls = shape.walls.map((wall) => {
+      const basePath = wall.base;
+      const pathD = basePath.getAttribute("d");
+
+      // ✅ Use identifyWallBoundaries on the base path
+      const bounds = identifyWallBoundaries(pathD);
+
+      return {
+        ...wall,
+        bounds, // ✅ Store the identified boundaries for the wall
+      };
+    });
 
     return {
       ...shape,
-      wallBounds, // ✅ Store boundary points
-      walls: [
-        {
-          base: shape.floor.path,
-          bounds: wallBounds,
-        },
-      ],
+      walls: updatedWalls, // ✅ Update walls with boundaries
     };
   });
 
-  // ✅ Generate debug SVG that includes only the floor and wall boundaries
+  // ✅ Generate debug SVG that includes wall boundaries
   const debugDom = new JSDOM(svg, { contentType: "image/svg+xml" });
   const debugDoc = debugDom.window.document;
   const debugSvgElement = debugDoc.querySelector("svg");
@@ -34,15 +38,22 @@ export default ({ svg, shapes }) => {
     debugSvgElement.appendChild(floor.path.cloneNode(true));
   });
 
-  // ✅ Visualize wall boundaries in debug mode
+  // ✅ Visualize wall boundaries in the debug SVG
   let debugSvg = debugDom.serialize();
-  shapes.forEach(({ wallBounds }, index) => {
-    debugSvg = visualizeWallBoundaries(debugSvg, wallBounds, index);
+  shapes.forEach(({ walls }, shapeIndex) => {
+    walls.forEach((wall, wallIndex) => {
+      // Visualize boundaries for each wall
+      debugSvg = visualizeWallBoundaries(
+        debugSvg,
+        wall.bounds,
+        `${shapeIndex}-${wallIndex}`
+      );
+    });
   });
 
   return {
     svg, // ✅ Keep original SVG unchanged
-    svgDebug: debugSvg, // ✅ Debug version: floors + wall boundaries only
+    svgDebug: debugSvg, // ✅ Debug version: walls + boundaries visualized
     shapes, // ✅ Pass updated shape model
   };
 };

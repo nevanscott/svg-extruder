@@ -3,6 +3,7 @@ import convertShapesToPaths from "./pipeline/convertShapesToPaths.js";
 import constructFloor from "./pipeline/constructFloor.js";
 import transformFloorToIsometric from "./pipeline/transformFloorToIsometric.js";
 import recenterView from "./pipeline/recenterView.js";
+import splitWalls from "./pipeline/splitWalls.js";
 import findWallBoundaries from "./pipeline/findWallBoundaries.js";
 import constructCeiling from "./pipeline/constructCeiling.js";
 import constructWalls from "./pipeline/constructWalls.js";
@@ -46,6 +47,11 @@ const pipeline = [
     step: recenterView,
   },
   {
+    name: "Split Walls",
+    show: true,
+    step: splitWalls,
+  },
+  {
     name: "Identify Wall Boundaries",
     show: true,
     step: findWallBoundaries,
@@ -62,7 +68,7 @@ const pipeline = [
   // },
   {
     name: "Final SVG",
-    show: true,
+    show: false,
     step: ({ shapes, svg, svgDebug }) => ({ shapes, svg, svgDebug: svg }),
   },
 ];
