@@ -50,10 +50,17 @@ export default ({ svg, shapes }) => {
 
     let walls =
       shape.walls?.map((wall) => {
-        let wallBBox = getPathBoundingBox(wall.path.getAttribute("d"));
+        let sides = wall.sides?.map((side) => {
+          let sideBBox = getPathBoundingBox(side.path.getAttribute("d"));
+          return {
+            ...side,
+            depth: computeDepth(sideBBox, viewBox),
+          };
+        });
+
         return {
           ...wall,
-          depth: computeDepth(wallBBox, viewBox),
+          sides,
         };
       }) || [];
 
@@ -71,10 +78,10 @@ export default ({ svg, shapes }) => {
     (a, b) => a.floor.depth - b.floor.depth
   );
 
-  // ✅ Sort walls in **decreasing** depth order (back-to-front)
-  const sortedWalls = [...shapes.flatMap((s) => s.walls)].sort(
-    (a, b) => b.depth - a.depth
-  );
+  // ✅ Sort wall sides in **decreasing** depth order (back-to-front)
+  const sortedWallSides = [
+    ...shapes.flatMap((s) => s.walls.flatMap((w) => w.sides)),
+  ].sort((a, b) => b.depth - a.depth);
 
   // ✅ Preserve original order for ceilings
   const sortedCeilings = [...shapes]
@@ -92,15 +99,13 @@ export default ({ svg, shapes }) => {
     cleanSvgElement.appendChild(floorPath);
   });
 
-  sortedWalls.forEach((wall) => {
+  sortedWallSides.forEach((side) => {
     const wallPath = cleanDoc.createElementNS(
       "http://www.w3.org/2000/svg",
       "path"
     );
-    wallPath.setAttribute("d", wall.path.getAttribute("d"));
-    wallPath.setAttribute("fill", wall.fillColor || "gray");
-    // wallPath.setAttribute("stroke", "black");
-    // wallPath.setAttribute("stroke-width", "0.5");
+    wallPath.setAttribute("d", side.path.getAttribute("d"));
+    wallPath.setAttribute("fill", side.fillColor || "gray");
     cleanSvgElement.appendChild(wallPath);
   });
 
@@ -157,21 +162,21 @@ export default ({ svg, shapes }) => {
     bboxElements.forEach((el) => debugSvgElement.appendChild(el));
   });
 
-  sortedWalls.forEach((wall) => {
+  sortedWallSides.forEach((side) => {
     const debugWall = debugDoc.createElementNS(
       "http://www.w3.org/2000/svg",
       "path"
     );
-    debugWall.setAttribute("d", wall.path.getAttribute("d"));
-    debugWall.setAttribute("fill", wall.fillColor || "gray");
+    debugWall.setAttribute("d", side.path.getAttribute("d"));
+    debugWall.setAttribute("fill", side.fillColor || "gray");
     debugWall.setAttribute("opacity", "0.5");
     debugWall.setAttribute("stroke", "black");
     debugWall.setAttribute("stroke-width", "0.5");
     debugSvgElement.appendChild(debugWall);
 
     const bboxElements = drawBBoxWithDepth(
-      getPathBoundingBox(wall.path.getAttribute("d")),
-      wall.depth,
+      getPathBoundingBox(side.path.getAttribute("d")),
+      side.depth,
       "blue",
       debugDoc
     );

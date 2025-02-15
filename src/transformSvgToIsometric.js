@@ -43,7 +43,7 @@ const pipeline = [
   },
   {
     name: "Recenter SVG",
-    show: true,
+    show: false,
     step: recenterView,
   },
   {
@@ -61,14 +61,14 @@ const pipeline = [
     show: true,
     step: constructWalls,
   },
-  // {
-  //   name: "Order Layers",
-  //   show: false,
-  //   step: orderLayers,
-  // },
+  {
+    name: "Order Layers",
+    show: true,
+    step: orderLayers,
+  },
   {
     name: "Final SVG",
-    show: false,
+    show: true,
     step: ({ shapes, svg, svgDebug }) => ({ shapes, svg, svgDebug: svg }),
   },
 ];
