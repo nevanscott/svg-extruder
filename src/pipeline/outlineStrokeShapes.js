@@ -3,8 +3,6 @@ import paper from "paper";
 import { PaperOffset } from "paperjs-offset";
 
 export default async ({ svg, svgDebug, shapes }) => {
-  console.log("Starting outlineStrokeShapes...");
-
   // Parse the SVG into a DOM structure
   const dom = new JSDOM(svg);
   const doc = dom.window.document;
@@ -115,8 +113,6 @@ export default async ({ svg, svgDebug, shapes }) => {
 
   // Serialize debug SVG
   svgDebug = debugDom.serialize();
-
-  console.log("Completed outlineStrokeShapes.");
 
   return { svg, svgDebug, shapes };
 };
