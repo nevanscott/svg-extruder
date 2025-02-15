@@ -3,8 +3,8 @@
       <linearGradient id="gradient-50-50" gradientUnits="userSpaceOnUse"
         x1="10" y1="50.79"
         x2="93.7" y2="50.79">
-        <stop offset="0%" style="stop-color:#0000e5;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#0000cc;stop-opacity:1" />
+        <stop offset="0%" style="stop-color:#0900ee;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#1300de;stop-opacity:1" />
       </linearGradient>
     </defs><path d="M10,30.79
     A41.85,20.79 0 0,0 93.7,30.79
@@ -15,8 +15,8 @@
       <linearGradient id="gradient-80-50" gradientUnits="userSpaceOnUse"
         x1="40" y1="65.78999999999999"
         x2="123.69999999999999" y2="65.78999999999999">
-        <stop offset="0%" style="stop-color:#007300;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#006600;stop-opacity:1" />
+        <stop offset="0%" style="stop-color:#007000;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#006100;stop-opacity:1" />
       </linearGradient>
     </defs><path d="M40,45.79
     A41.85,20.79 0 0,0 123.69999999999999,45.79

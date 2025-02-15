@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-      <polygon points="0,25 0,55 0,35 0,5" fill="#bf3636" />
-<polygon points="0,55 -60,55 -60,35 0,35" fill="#bf3636" />
-<polygon points="-60,55 -60,65 -60,45 -60,35" fill="#bf3636" />
-<polygon points="-60,65 0,65 0,45 -60,45" fill="#bf3636" />
-<polygon points="0,65 0,95 0,75 0,45" fill="#bf3636" />
-<polygon points="0,95 20,95 20,75 0,75" fill="#bf3636" />
-<polygon points="20,95 20,65 20,45 20,75" fill="#bf3636" />
-<polygon points="20,65 80,65 80,45 20,45" fill="#bf3636" />
-<polygon points="80,65 80,55 80,35 80,45" fill="#bf3636" />
-<polygon points="80,55 20,55 20,35 80,35" fill="#bf3636" />
-<polygon points="20,55 20,25 20,5 20,35" fill="#bf3636" />
-<polygon points="20,25 0,25 0,5 20,5" fill="#bf3636" />
-<polygon points="0,25 NaN,NaN NaN,NaN 0,5" fill="#bf3636" />
-<polygon points="NaN,NaN 0,25 0,5 NaN,NaN" fill="#bf3636" />
+      <polygon points="0,25 0,55 0,35 0,5" fill="#c1001c" />
+<polygon points="0,55 -60,55 -60,35 0,35" fill="#c1001c" />
+<polygon points="-60,55 -60,65 -60,45 -60,35" fill="#c1001c" />
+<polygon points="-60,65 0,65 0,45 -60,45" fill="#c1001c" />
+<polygon points="0,65 0,95 0,75 0,45" fill="#c1001c" />
+<polygon points="0,95 20,95 20,75 0,75" fill="#c1001c" />
+<polygon points="20,95 20,65 20,45 20,75" fill="#c1001c" />
+<polygon points="20,65 80,65 80,45 20,45" fill="#c1001c" />
+<polygon points="80,65 80,55 80,35 80,45" fill="#c1001c" />
+<polygon points="80,55 20,55 20,35 80,35" fill="#c1001c" />
+<polygon points="20,55 20,25 20,5 20,35" fill="#c1001c" />
+<polygon points="20,25 0,25 0,5 20,5" fill="#c1001c" />
+<polygon points="0,25 NaN,NaN NaN,NaN 0,5" fill="#c1001c" />
+<polygon points="NaN,NaN 0,25 0,5 NaN,NaN" fill="#c1001c" />
       <polygon points="0,5 0,35 -60,35 -60,45 0,45 0,75 20,75 20,45 80,45 80,35 20,35 20,5 0,5 NaN,NaN" fill="#EF4444" />
       
     </svg>

@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 134.875 122.325">
-      <polygon points="40,10 10,25 10,45 40,30" fill="#cc8400" />
-<polygon points="10,25 60,50 60,70 10,45" fill="#e59400" />
-<polygon points="90,35 60,50 60,70 90,55" fill="#cc8400" />
+      <polygon points="40,10 10,25 10,45 40,30" fill="#c97300" />
+<polygon points="10,25 60,50 60,70 10,45" fill="#e48c00" />
+<polygon points="90,35 60,50 60,70 90,55" fill="#c97300" />
 <defs>
       <linearGradient id="gradient-100-50" gradientUnits="userSpaceOnUse"
         x1="55.125" y1="95"
         x2="124.875" y2="95">
         <stop offset="0%" style="stop-color:#730073;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#660066;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#650066;stop-opacity:1" />
       </linearGradient>
     </defs><path d="M55.125,75
     A34.875,17.325 0 0,0 124.875,75

@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-      <polygon points="-20,45 -20,65 -20,45 -20,25" fill="#1b9d4b" />
-<polygon points="-20,65 61,64.5 61,44.5 -20,45" fill="#1b9d4b" />
-<polygon points="61,64.5 60.5,56.25 60.5,36.25 61,44.5" fill="#1b9d4b" />
-<polygon points="60.5,56.25 -4.5,57.25 -4.5,37.25 60.5,36.25" fill="#1b9d4b" />
-<polygon points="-4.5,57.25 -4.5,45.25 -4.5,25.25 -4.5,37.25" fill="#1b9d4b" />
-<polygon points="-4.5,45.25 -20,45 -20,25 -4.5,25.25" fill="#1b9d4b" />
-<polygon points="-20,45 NaN,NaN NaN,NaN -20,25" fill="#1b9d4b" />
-<polygon points="NaN,NaN -20,45 -20,25 NaN,NaN" fill="#1b9d4b" />
+      <polygon points="-20,45 -20,65 -20,45 -20,25" fill="#009630" />
+<polygon points="-20,65 61,64.5 61,44.5 -20,45" fill="#009630" />
+<polygon points="61,64.5 60.5,56.25 60.5,36.25 61,44.5" fill="#009630" />
+<polygon points="60.5,56.25 -4.5,57.25 -4.5,37.25 60.5,36.25" fill="#009630" />
+<polygon points="-4.5,57.25 -4.5,45.25 -4.5,25.25 -4.5,37.25" fill="#009630" />
+<polygon points="-4.5,45.25 -20,45 -20,25 -4.5,25.25" fill="#009630" />
+<polygon points="-20,45 NaN,NaN NaN,NaN -20,25" fill="#009630" />
+<polygon points="NaN,NaN -20,45 -20,25 NaN,NaN" fill="#009630" />
       <polygon points="-20,25 -20,45 61,44.5 60.5,36.25 -4.5,37.25 -4.5,25.25 -20,25 NaN,NaN" fill="#22C55E" />
       
     </svg>

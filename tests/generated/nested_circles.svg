@@ -15,8 +15,8 @@
       <linearGradient id="gradient-100-100" gradientUnits="userSpaceOnUse"
         x1="10" y1="64.65"
         x2="149.5" y2="64.65">
-        <stop offset="0%" style="stop-color:#e5e500;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#cccc00;stop-opacity:1" />
+        <stop offset="0%" style="stop-color:#dfde00;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#c0be00;stop-opacity:1" />
       </linearGradient>
     </defs><path d="M10,44.650000000000006
     A69.75,34.65 0 0,0 149.5,44.650000000000006
