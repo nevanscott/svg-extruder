@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { transformSvgToIsometric } from "../src/extruder.js"; // Adjust this path to point to your JavaScript module
+import { transformSvgToIsometric } from "../src/transformSvgToIsometric.js";
 
 // Resolve __dirname equivalent for ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -33,26 +33,33 @@ export async function buildTestDemos() {
         const inputFile = join(sourceDir, filename);
         const outputFile = join(outputDir, filename);
 
-        // console.log(`Processing ${inputFile} -> ${outputFile}`);
         try {
-          await transformSvgToIsometric(inputFile, outputFile); // Transform the SVG
-
-          // Ensure the transformed file exists before proceeding
-          try {
-            await fs.access(outputFile);
-          } catch {
-            throw new Error(`Transformed file not found: ${outputFile}`);
-          }
-
-          // Read the original and transformed SVGs
           const originalSvg = await fs.readFile(inputFile, "utf-8");
-          const transformedSvg = await fs.readFile(outputFile, "utf-8");
+
+          // Run the new pipeline-based transform
+          const { svg: transformedSvg } = await transformSvgToIsometric(
+            originalSvg
+          );
+
+          // Extract just the <svg> element
+          const svgContentMatch = transformedSvg.match(
+            /<svg[^>]*>[\s\S]*<\/svg>/
+          );
+          if (!svgContentMatch) {
+            throw new Error(
+              `No valid <svg> content found in output for file: ${filename}`
+            );
+          }
+          const svgContent = svgContentMatch[0];
+
+          // Save the transformed SVG content to the output directory
+          await fs.writeFile(outputFile, svgContent);
 
           // Add the result to the results object
           results.processedFiles.push({
             filename,
             originalSvg,
-            transformedSvg,
+            transformedSvg: svgContent,
           });
         } catch (error) {
           console.error(`Error processing ${filename}:`, error.message);
