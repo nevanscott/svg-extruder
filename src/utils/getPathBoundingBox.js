@@ -1,21 +1,29 @@
-import { Path } from "@svgdotjs/svg.js";
+import boundingBox from "svg-path-bounding-box";
 
 /**
- * Compute the bounding box of an SVG path.
+ * Compute the bounding box of an SVG path using svg-path-bounding-box.
  */
 export function getPathBoundingBox(d) {
-  if (!d) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  if (!d) {
+    console.error("getPathBoundingBox: Path data is null or empty.");
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  }
 
-  // Create an SVG path in-memory
-  const path = new Path({ d });
+  try {
+    // Calculate the bounding box using the library
+    const bbox = boundingBox(d);
 
-  // Get the bounding box
-  const bbox = path.bbox();
-
-  return {
-    minX: bbox.x,
-    minY: bbox.y,
-    maxX: bbox.x + bbox.width,
-    maxY: bbox.y + bbox.height,
-  };
+    return {
+      minX: bbox.x1,
+      minY: bbox.y1,
+      maxX: bbox.x2,
+      maxY: bbox.y2,
+    };
+  } catch (error) {
+    console.error("Error in getPathBoundingBox:", {
+      pathData: d,
+      error: error.message,
+    });
+    throw error;
+  }
 }
