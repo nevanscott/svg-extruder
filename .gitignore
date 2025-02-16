@@ -10,4 +10,4 @@ _site
 # Local Netlify folder
 .netlify
 
-website/src/content/assets/
+dist/

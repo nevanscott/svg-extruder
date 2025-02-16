@@ -3,7 +3,7 @@ import esbuild from "esbuild";
 esbuild
   .build({
     entryPoints: ["./src/transformSvgToIsometric.js"], // Path to your function file
-    outfile: "./website/src/content/assets/transform.js", // Path where the bundled file will be saved
+    outfile: "./dist/transform.js", // Path where the bundled file will be saved
     bundle: true, // Bundle all dependencies into one file
     minify: true, // Minify the output for smaller file size
     platform: "browser", // Target browser environment

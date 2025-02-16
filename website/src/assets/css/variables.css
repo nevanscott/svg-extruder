@@ -1,0 +1,16 @@
+:root {
+  --color-text: #333;
+  --color-link: #340ba4;
+  --color-background: #fafafa;
+  --color-border: #eee;
+  --color-surface: white;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #eee;
+    --color-link: #0ff;
+    --color-background: #191919;
+    --color-border: #333;
+    --color-surface: #111;
+  }
+}

@@ -1,0 +1,11 @@
+.svg-container {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+svg {
+  width: 300px;
+  height: auto;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}

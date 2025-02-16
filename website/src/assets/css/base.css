@@ -1,0 +1,21 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  margin: 2rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+h1 {
+  text-align: center;
+}
+h2,
+h3 {
+  margin-top: 2em;
+}
