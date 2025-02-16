@@ -55,6 +55,13 @@ layout: default
     display: flex;
     gap: 4rem;
     margin-top: 2rem;
+    opacity: 0;
+    transform: translate(0, 1rem);
+    transition: opacity 750ms ease, transform 750ms ease;
+  }
+  .dingus.enabled {
+    opacity: 1;
+    transform: translate(0, 0);
   }
   .dingus__input {
     display: flex;
@@ -128,16 +135,21 @@ layout: default
 
         // Once CodeMirror is successfully initialized, hide the textarea
         svgInput.classList.remove("hidden-textarea");
+
+        // Fade in the dingus after CodeMirror is initialized
+        dingus.classList.add("enabled");
       } catch (error) {
         console.warn("CodeMirror failed to load. Falling back to textarea.");
         // If CodeMirror fails, make sure the textarea is visible
         svgInput.style.opacity = "1"; // Restore the textarea opacity
+        dingus.classList.add("enabled"); // Ensure the whole dingus is visible
       }
     });
   } catch (error) {
     console.warn("CodeMirror failed to initialize:", error);
     // Ensure the fallback is visible if there's an error
     svgInput.style.opacity = "1"; // Restore the textarea opacity
+    dingus.style.opacity = "1"; // Ensure the whole dingus is visible
   }
 
   document
