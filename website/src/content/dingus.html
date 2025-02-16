@@ -71,10 +71,9 @@ layout: default
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/xml/xml.min.js"></script>
 
-<script type="module" src="/assets/transform.js"></script>
-
 <script type="module">
-  import { transformSvgToIsometric } from "/assets/transform.js";
+  // Hide the dingus until codemirror is loaded
+  document.querySelector(".dingus").hidden = true;
 
   // Enhance the textarea with codemirror for svg editing
   const svgInput = document.getElementById("svgInput");
@@ -89,6 +88,17 @@ layout: default
 
   // Adjust the width and height of the CodeMirror editor
   editor.setSize("500px", "400px");
+
+  // Show the dingus once codemirror is loaded
+  editor.on("change", () => {
+    document.querySelector(".dingus").hidden = false;
+  });
+</script>
+
+<script type="module" src="/assets/transform.js"></script>
+
+<script type="module">
+  import { transformSvgToIsometric } from "/assets/transform.js";
 
   document
     .getElementById("transformButton")
