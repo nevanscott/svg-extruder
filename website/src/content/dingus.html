@@ -13,10 +13,15 @@ layout: default
     network issues. It can’t hurt to try reloading the page.
   </p>
 </noscript>
-<div class="dingus">
+
+<div class="dingus" id="dingus">
   <div class="dingus__input">
     <label for="svgInput">Paste your SVG code here:</label>
-    <textarea id="svgInput" placeholder="Paste SVG here...">
+    <textarea
+      id="svgInput"
+      placeholder="Paste SVG here..."
+      class="hidden-textarea"
+    >
 <svg width="143" height="126" viewBox="0 0 143 126" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect x="24" y="24" width="95" height="78" rx="24" fill="#D50C34"/>
   <path d="M85.64 65.44V73.032H82V80H71.912L71.86 73.032H57.04V66.324L66.764 43.548L75.552 46.668L67.596 65.44H71.964L73.16 57.744H82V65.44H85.64Z" fill="white"/>
@@ -44,6 +49,7 @@ layout: default
     </div>
   </div>
 </div>
+
 <style>
   .dingus {
     display: flex;
@@ -67,6 +73,16 @@ layout: default
     font-family: monospace;
     padding: 0.5rem;
     margin: 0;
+    transition: opacity 0.3s ease;
+  }
+  .hidden-textarea {
+    opacity: 0;
+  }
+  .dingus__input {
+    position: relative;
+  }
+  .dingus.hidden {
+    display: none;
   }
 </style>
 
@@ -86,19 +102,43 @@ layout: default
 <script type="module">
   import { transformSvgToIsometric } from "/assets/transform.js";
 
-  // Enhance the textarea with codemirror for svg editing
+  const dingus = document.getElementById("dingus");
   const svgInput = document.getElementById("svgInput");
-  const editor = CodeMirror.fromTextArea(svgInput, {
-    mode: "xml",
-    theme: "monokai",
-    lineNumbers: true,
-    lineWrapping: true,
-    tabSize: 2,
-    indentUnit: 2,
-  });
 
-  // Adjust the width and height of the CodeMirror editor
-  editor.setSize("500px", "400px");
+  // Initially show the dingus, but hide the textarea with opacity 0
+  dingus.classList.remove("hidden");
+
+  // Try to initialize CodeMirror and show the dingus
+  let editor;
+  try {
+    // Delayed initialization to avoid rendering issues
+    requestAnimationFrame(() => {
+      try {
+        editor = CodeMirror.fromTextArea(svgInput, {
+          mode: "xml",
+          theme: "monokai",
+          lineNumbers: true,
+          lineWrapping: true,
+          tabSize: 2,
+          indentUnit: 2,
+        });
+
+        // Adjust the width and height of the CodeMirror editor
+        editor.setSize("500px", "400px");
+
+        // Once CodeMirror is successfully initialized, hide the textarea
+        svgInput.classList.remove("hidden-textarea");
+      } catch (error) {
+        console.warn("CodeMirror failed to load. Falling back to textarea.");
+        // If CodeMirror fails, make sure the textarea is visible
+        svgInput.style.opacity = "1"; // Restore the textarea opacity
+      }
+    });
+  } catch (error) {
+    console.warn("CodeMirror failed to initialize:", error);
+    // Ensure the fallback is visible if there's an error
+    svgInput.style.opacity = "1"; // Restore the textarea opacity
+  }
 
   document
     .getElementById("transformButton")
