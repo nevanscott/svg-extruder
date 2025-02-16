@@ -11,23 +11,20 @@ export default function (eleventyConfig) {
   // Watch CSS files for changes
   eleventyConfig.addWatchTarget("./website/src/assets/css/");
 
-  // Pass through the JavaScript file (transformSvgToIsometric.js)
-  eleventyConfig.addPassthroughCopy("dist/transform.js");
-
-  // Copy the processed CSS to the output directory
+  // JavaScript bundle passthrough
   eleventyConfig.addPassthroughCopy({
-    "./website/src/assets/css/": "assets/css/",
+    "./dist/transform.js": "assets/transform.js",
   });
 
-  // Add PostCSS transform for CSS files
+  // Process CSS with PostCSS transform
   eleventyConfig.addTransform("postcss", async (content, outputPath) => {
     if (outputPath && outputPath.endsWith(".css")) {
       const result = await postcss([
         postcssImport, // Import CSS files
         postcssNested, // Enable nested selectors
         autoprefixer, // Add vendor prefixes
-        ...(process.env.NODE_ENV === "production" ? [cssnano] : []), // Minify CSS in production
-      ]).process(content, { from: outputPath });
+        ...(process.env.NODE_ENV === "production" ? [cssnano] : []), // Minify in production
+      ]).process(content, { from: undefined }); // PostCSS needs a 'from' to be undefined for transforms
 
       return result.css;
     }
