@@ -16,6 +16,7 @@
 @import "./components/pipeline.css";
 
 /* Page-specific styles */
+@import "./pages/changelog.css";
 @import "./pages/dingus.css";
 @import "./pages/pipeline.css";
 
