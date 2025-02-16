@@ -7,8 +7,9 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "nodemon --exec 'eleventy --serve' --watch 'src'",
-    "build": "eleventy"
+    "build:js": "node build.js",
+    "build": "npm run build:js && eleventy",
+    "start": "nodemon --exec 'npm run build && eleventy --serve' --watch 'src'"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +32,7 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "nodemon": "^3.1.9"
   }
 }

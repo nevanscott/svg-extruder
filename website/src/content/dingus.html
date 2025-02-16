@@ -1,0 +1,69 @@
+---
+title: Dingus
+layout: default
+---
+
+<label for="svgInput">Paste your SVG code here:</label>
+<textarea id="svgInput" placeholder="Paste SVG here...">
+<svg width="143" height="126" viewBox="0 0 143 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="24" y="24" width="95" height="78" rx="24" fill="#D50C34"/>
+  <path d="M85.64 65.44V73.032H82V80H71.912L71.86 73.032H57.04V66.324L66.764 43.548L75.552 46.668L67.596 65.44H71.964L73.16 57.744H82V65.44H85.64Z" fill="white"/>
+</svg>
+
+</textarea>
+<br />
+<button id="transformButton">Transform</button>
+<button id="downloadButton" disabled>Download</button>
+<div id="output"></div>
+
+<style>
+  textarea {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 1rem;
+    background-color: #444;
+    color: white;
+    font-size: 1rem;
+    font-family: monospace;
+    padding: 0.5rem;
+  }
+</style>
+
+<script type="module" src="/assets/transform.js"></script>
+<script type="module">
+  import { transformSvgToIsometric } from "/assets/transform.js";
+
+  document
+    .getElementById("transformButton")
+    .addEventListener("click", async () => {
+      const svgInput = document.getElementById("svgInput").value;
+      if (!svgInput.trim()) {
+        alert("Please paste valid SVG code!");
+        return;
+      }
+
+      try {
+        const { svg: transformedSvg } = await transformSvgToIsometric(svgInput); // Use the imported function
+        console.log(transformedSvg);
+        const outputDiv = document.getElementById("output");
+        outputDiv.innerHTML = transformedSvg; // Render the transformed SVG
+        document.getElementById("downloadButton").disabled = false;
+
+        // Enable download
+        document.getElementById("downloadButton").onclick = () => {
+          const blob = new Blob([transformedSvg], { type: "image/svg+xml" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "transformed.svg";
+          a.click();
+          URL.revokeObjectURL(url);
+        };
+      } catch (error) {
+        alert(
+          "An error occurred while transforming the SVG. Check the console for details."
+        );
+        console.error(error);
+      }
+    });
+</script>

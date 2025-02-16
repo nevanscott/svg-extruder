@@ -1,5 +1,3 @@
-import { JSDOM } from "jsdom";
-
 const isNode = typeof window === "undefined";
 
 let parseSvg, serializeSvg, createSvgElement, cloneElement, removeElements;
@@ -9,33 +7,35 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 if (isNode) {
   // Node.js Environment
-  parseSvg = (svg) => {
-    const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-    const doc = dom.window.document;
-    const svgElement = doc.querySelector("svg");
-    return { dom, doc, svgElement };
-  };
+  import("jsdom").then(({ JSDOM }) => {
+    parseSvg = (svg) => {
+      const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
+      const doc = dom.window.document;
+      const svgElement = doc.querySelector("svg");
+      return { dom, doc, svgElement };
+    };
 
-  serializeSvg = (docOrDom) => {
-    if (docOrDom.defaultView) {
-      return docOrDom.defaultView.document.documentElement.outerHTML;
-    }
-    return docOrDom.serialize(); // Use the original `dom` if passed directly
-  };
+    serializeSvg = (docOrDom) => {
+      if (docOrDom.defaultView) {
+        return docOrDom.defaultView.document.documentElement.outerHTML;
+      }
+      return docOrDom.serialize(); // Use the original `dom` if passed directly
+    };
 
-  createSvgElement = (doc, tagName, attributes = {}) => {
-    const element = doc.createElementNS(SVG_NAMESPACE, tagName);
-    Object.entries(attributes).forEach(([key, value]) => {
-      element.setAttribute(key, value);
-    });
-    return element;
-  };
+    createSvgElement = (doc, tagName, attributes = {}) => {
+      const element = doc.createElementNS(SVG_NAMESPACE, tagName);
+      Object.entries(attributes).forEach(([key, value]) => {
+        element.setAttribute(key, value);
+      });
+      return element;
+    };
 
-  cloneElement = (element) => element.cloneNode(true);
+    cloneElement = (element) => element.cloneNode(true);
 
-  removeElements = (doc, selector) => {
-    doc.querySelectorAll(selector).forEach((el) => el.remove());
-  };
+    removeElements = (doc, selector) => {
+      doc.querySelectorAll(selector).forEach((el) => el.remove());
+    };
+  });
 } else {
   // Browser Environment
   parseSvg = (svg) => {
