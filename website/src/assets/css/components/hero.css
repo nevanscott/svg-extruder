@@ -16,7 +16,7 @@
 }
 
 .hero svg {
-  margin-block: -6rem;
+  margin-block-end: -6rem;
 }
 
 .hero p:first-of-type {
