@@ -3,74 +3,32 @@ title: Pipeline
 layout: default
 ---
 
-<div class="filters">
-  <details>
-    <summary>Filters</summary>
-    <p>Check the steps you want to see.</p>
-    <button class="reset">Reset filters</button>
-    <form>
-      {% for step in tests[0].steps %}
-      <label>
-        <input
-          type="checkbox"
-          name="{{ step.name | slugify }}"
-          {%
-          if
-          step.show
-          %}checked{%
-          endif
-          %}
-        />
-        {{ forloop.index0 }}. {{ step.name }}
-      </label>
-      {% endfor %}
-    </form>
-  </details>
-</div>
-
-{% for test in tests %}
-<div class="pipeline">
-  <h2>
-    <a href="/tests/{{ test.filename | slugify }}">{{ test.filename }}</a>
-  </h2>
-  <div class="row">
-    {% for step in test.steps %}
-    <figure
-      {%
-      unless
-      step.show
-      %}hidden{%
-      endunless
-      %}
-      data-step="{{ step.name | slugify }}"
-    >
-      {{ step.svgDebug }}
-      <figcaption>
-        {{ step.name }}
-        <button class="copy-svg">Copy SVG</button>
-      </figcaption>
-    </figure>
+<section class="pipeline-page">
+  {% include "./_filters.html" %}
+  <div>
+    {% for test in tests %}
+    <article class="pipeline">
+      <h2>
+        <a href="/tests/{{ test.filename | slugify }}">{{ test.filename }}</a>
+      </h2>
+      <div class="row">
+        {% for step in test.steps %}
+        <figure hidden="{!step.show}" data-step="{{ step.name | slugify }}">
+          {{ step.svgDebug }}
+          <figcaption>
+            {{ step.name }}
+            <button class="copy-svg">Copy SVG</button>
+          </figcaption>
+        </figure>
+        {% endfor %}
+      </div>
+    </article>
     {% endfor %}
   </div>
-</div>
-{% endfor %}
+</section>
 
 <script>
-  document.querySelectorAll(".copy-svg").forEach((button) => {
-    button.addEventListener("click", () => {
-      const svg = button.closest("figure").querySelector("svg");
-      const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(svg);
-      const tempTextArea = document.createElement("textarea");
-      tempTextArea.value = svgString;
-      document.body.appendChild(tempTextArea);
-      tempTextArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(tempTextArea);
-    });
-  });
-
-  // Seed the localStorage based on the initial DOM state of the checkboxes
+  // Store the initial state from the DOM when the page loads
   const initialState = {};
   document
     .querySelectorAll("form input[type='checkbox']")
@@ -78,46 +36,46 @@ layout: default
       const stepName = checkbox.name;
       const isChecked = checkbox.checked;
       initialState[stepName] = isChecked;
+
+      // Seed localStorage if not already set
       if (localStorage.getItem(stepName) === null) {
         localStorage.setItem(stepName, isChecked);
       }
     });
 
-  // Load the state from localStorage when the page loads
-  document.addEventListener("DOMContentLoaded", () => {
-    document
-      .querySelectorAll("form input[type='checkbox']")
-      .forEach((checkbox) => {
-        const stepName = checkbox.name;
-        const isChecked = localStorage.getItem(stepName) === "true";
-        checkbox.checked = isChecked;
-        const steps = document.querySelectorAll(`[data-step="${stepName}"]`);
-        steps.forEach((step) => {
-          if (isChecked) {
-            step.removeAttribute("hidden");
-          } else {
-            step.setAttribute("hidden", "");
-          }
-        });
-      });
-  });
-
-  // Update the state in localStorage whenever a checkbox is toggled
-  document.querySelector("form").addEventListener("change", (event) => {
-    const stepName = event.target.name;
-    const isChecked = event.target.checked;
-    localStorage.setItem(stepName, isChecked);
+  // Utility function to update visibility of steps
+  const updateVisibility = (stepName, isChecked) => {
     const steps = document.querySelectorAll(`[data-step="${stepName}"]`);
     steps.forEach((step) => {
-      if (isChecked) {
-        step.removeAttribute("hidden");
-      } else {
-        step.setAttribute("hidden", "");
-      }
+      if (isChecked) step.removeAttribute("hidden");
+      else step.setAttribute("hidden", "");
     });
-  });
+  };
 
-  // Reset filters to initial state
+  // Utility function to save state to localStorage
+  const saveStateToLocalStorage = (checkbox) => {
+    const stepName = checkbox.name;
+    const isChecked = checkbox.checked;
+    localStorage.setItem(stepName, isChecked);
+    updateVisibility(stepName, isChecked);
+  };
+
+  // Initialize checkboxes and load state from localStorage
+  document
+    .querySelectorAll("form input[type='checkbox']")
+    .forEach((checkbox) => {
+      const stepName = checkbox.name;
+      const isChecked = localStorage.getItem(stepName) === "true";
+      checkbox.checked = isChecked;
+      updateVisibility(stepName, isChecked);
+
+      // Add event listener
+      checkbox.addEventListener("change", () =>
+        saveStateToLocalStorage(checkbox)
+      );
+    });
+
+  // Reset filters to the initial DOM state
   document.querySelector(".reset").addEventListener("click", () => {
     document
       .querySelectorAll("form input[type='checkbox']")
@@ -126,29 +84,29 @@ layout: default
         const isChecked = initialState[stepName];
         checkbox.checked = isChecked;
         localStorage.setItem(stepName, isChecked);
-        const steps = document.querySelectorAll(`[data-step="${stepName}"]`);
-        steps.forEach((step) => {
-          if (isChecked) {
-            step.removeAttribute("hidden");
-          } else {
-            step.setAttribute("hidden", "");
-          }
-        });
+        updateVisibility(stepName, isChecked);
       });
   });
 
-  // Update the state in localStorage whenever a checkbox is toggled
-  document.querySelector("form").addEventListener("change", (event) => {
-    const stepName = event.target.name;
-    const isChecked = event.target.checked;
-    localStorage.setItem(stepName, isChecked);
-    const steps = document.querySelectorAll(`[data-step="${stepName}"]`);
-    steps.forEach((step) => {
-      if (isChecked) {
-        step.removeAttribute("hidden");
-      } else {
-        step.setAttribute("hidden", "");
-      }
+  // Show all steps
+  document.querySelector(".show-all").addEventListener("click", () => {
+    document
+      .querySelectorAll("form input[type='checkbox']")
+      .forEach((checkbox) => {
+        checkbox.checked = true;
+        saveStateToLocalStorage(checkbox);
+      });
+  });
+
+  // Copy SVG logic
+  document.querySelectorAll(".copy-svg").forEach((button) => {
+    button.addEventListener("click", () => {
+      const svg = button.closest("figure").querySelector("svg");
+      const svgString = new XMLSerializer().serializeToString(svg);
+      navigator.clipboard.writeText(svgString).then(() => {
+        button.textContent = "Copied!";
+        setTimeout(() => (button.textContent = "Copy SVG"), 2000);
+      });
     });
   });
 </script>

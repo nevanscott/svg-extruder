@@ -1,0 +1,25 @@
+<div class="filters">
+  <details>
+    <summary>Filters</summary>
+    <p>Check the steps you want to see.</p>
+    <button class="reset">Reset filters</button>
+    <button class="show-all">Show all</button>
+    <form>
+      {% for step in tests[0].steps %}
+      <label>
+        <input
+          type="checkbox"
+          name="{{ step.name | slugify }}"
+          {%
+          if
+          step.show
+          %}checked{%
+          endif
+          %}
+        />
+        {{ forloop.index0 }}. {{ step.name }}
+      </label>
+      {% endfor %}
+    </form>
+  </details>
+</div>
