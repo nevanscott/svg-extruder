@@ -1,51 +1,60 @@
-.comparison {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: max-content min-content;
+.pipeline {
   background-color: var(--color-chrome);
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   overflow: hidden;
 }
 
-.comparison:has(> header) {
-  grid-template-rows: min-content max-content max-content;
+.pipeline + .pipeline {
+  margin-top: 2rem;
 }
-.comparison > header {
+
+.pipeline header {
   padding: 0.5em 1rem;
   border-bottom: 1px solid var(--color-border);
-  grid-column: span 2;
 }
-.comparison > header h1,
-.comparison > header h2 {
+.pipeline header h1,
+.pipeline header h2 {
   margin: 0;
 }
 
-.comparison > * {
+.pipeline .row {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  grid-template-rows: max-content min-content;
+  gap: 0;
+}
+
+.pipeline .row > * {
   display: grid;
   grid-template-rows: subgrid;
   grid-row: span 2;
+
+  &[hidden] {
+    display: none;
+  }
 }
 
-.comparison > :not(:last-child) {
+.pipeline .row > :not(:last-child) {
   border-right: 1px solid var(--color-border);
 }
 
-.comparison .container {
+.pipeline .container {
   aspect-ratio: 4 / 3;
   display: grid;
   place-items: center;
   background-color: var(--color-surface);
 }
 
-.container svg {
+.pipeline svg {
   object-fit: contain;
   height: auto;
   max-width: 100%;
   max-height: 100%;
 }
 
-.comparison figcaption {
+.pipeline figcaption {
   border-top: 1px solid var(--color-border);
   padding: 0.5em 1rem;
 }

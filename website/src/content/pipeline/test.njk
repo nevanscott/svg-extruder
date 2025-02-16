@@ -7,12 +7,16 @@ permalink: "tests/{{ test.filename | slugify }}/"
 layout: default
 ---
 
-<div class="pipeline">
-  <h2>{{ test.filename }}</h2>
+<article class="pipeline">
+  <header>
+    <h2>{{ test.filename }}</h2>
+  </header>
   <div class="row">
     {% for step in test.steps %} {% if step.show %}
     <figure>
-      {{ step.svgDebug | safe }}
+      <div class="container">
+        {{ step.svgDebug | safe }}
+      </div>
       <figcaption>
         {{ step.name }}
         <button class="copy-svg">Copy SVG</button>
@@ -20,7 +24,7 @@ layout: default
     </figure>
     {% endif %} {% endfor %}
   </div>
-</div>
+</article>
 
 <script>
   document.querySelectorAll(".copy-svg").forEach((button) => {

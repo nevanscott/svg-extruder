@@ -4,17 +4,19 @@ layout: default
 ---
 
 <section class="pipeline-page">
-  {% include "./_filters.html" %}
+  <div>{% include "./_filters.html" %}</div>
   <div>
     {% for test in tests %}
     <article class="pipeline">
-      <h2>
-        <a href="/tests/{{ test.filename | slugify }}">{{ test.filename }}</a>
-      </h2>
+      <header>
+        <h2>
+          <a href="/tests/{{ test.filename | slugify }}">{{ test.filename }}</a>
+        </h2>
+      </header>
       <div class="row">
         {% for step in test.steps %}
         <figure hidden="{!step.show}" data-step="{{ step.name | slugify }}">
-          {{ step.svgDebug }}
+          <div class="container">{{ step.svgDebug }}</div>
           <figcaption>
             {{ step.name }}
             <button class="copy-svg">Copy SVG</button>

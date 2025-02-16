@@ -13,6 +13,7 @@
 @import "./components/comparison.css";
 @import "./components/hero.css";
 @import "./components/logo.css";
+@import "./components/pipeline.css";
 
 /* Page-specific styles */
 @import "./pages/dingus.css";
