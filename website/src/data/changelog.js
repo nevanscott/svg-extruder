@@ -1,6 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
 import { marked } from "marked";
+import { markedSmartypants } from "marked-smartypants";
+
+marked.use(markedSmartypants());
 
 export default async function () {
   const __dirname = path.dirname(new URL(import.meta.url).pathname);

@@ -1,5 +1,44 @@
 # Changelog
 
+## 2025-02-16
+
+### Dingus
+
+Now that the [extrusion pipeline](/pipeline/) is producing (nearly) usable results, we've added a [dingus](/dingus/) where you can test it with your own SVG code!
+
+In order to pull this off, the process has gone through another fairly significant refactor. During the initial build, SVG transformation has been handled by JavaScript running in Node.js. For the dingus to work, the same process needs to run in a web browser. So we've refactored the codebase to run in both environments.
+
+### Environmental awareness
+
+Web browsers, in addition to being able to run JS, are responsible for rendering web views for end users. Among other things, this means that JS has access to a document and to the browser's Document Object Model (DOM). SVGs are essentially little documents---technically the SVG format is a flavor of XML---so the extruder works by running a series of transformation on an SVG document.
+
+In Node, which runs JS in an environment outside the web browser, there is limited support for DOM-related manipulations, so the extruder takes advantage of the [JSDOM](https://github.com/jsdom/jsdom/tree/main) library to emulate the browser's ability to work with the DOM.
+
+To make the extruder compatible with both environments, we've centralized the core DOM functionality needed into a small library which handles switching between these two implementations.
+
+It's all very 2012.
+
+### What's next?
+
+We should probably dust off the website a bit and consider using some kind of version numbers, I guess? Off the top of my head here's the current wishlist, in no particular order:
+
+- Make the extruder available as a web component that wraps around a source SVG
+- Build out the dingus to feel a bit more profesh, and offer better previewing features and perhaps a view of the pipeline stages for debugging
+- Clean up the design of the website and make it more responsive---what year is it anyway?
+- Add some documentation, especially for the more "advanced" features like elevation and height
+- Figure out how to modify things to support animations for the final SVG---especially for "exploding" layers at different elevations
+- Something something semver npm something something
+- Make some kind of show-offy homepage, natch
+- Add an rss/atom feed for the changelog for the nerds, and maybe something to cross-post on the socials for the rest of us
+- Add more demos, especially ones that look nicer and show more realistic use cases
+- Set up the website so users can open demos in the dingus to play around with them
+- Some sort of Figma plugin, if we must
+- Support for more visual styles, like a more wireframey version, or a solid version with rudimentary shading for the walls using gradients
+- Support for transparency / opacity in general
+- Support for alternate projections, most likely the mirrored isometric projection, but maybe others as well
+
+That's enough to be going on for now. Happy extruding!
+
 ## 2025-02-15
 
 <svg width="242.3438296781516" height="160.41232135250783" viewBox="0 0 242.3438296781516 160.41232135250783" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M152.89037,99.04466c5.229,7.1375 6.996,13.462 5.3,18.974c-1.414,5.512 -6.289,10.3525 -14.628,14.522c-7.773,3.8865 -17.102,6.36 -27.984,7.42c-10.741,0.9895 -22.048,0.353 -33.92,-1.908c-11.872,-2.261 -23.32,-6.148 -34.344,-11.66c-10.7413,-5.37065 -18.303,-10.9885 -22.684,-16.854c-4.381,-5.8655 -5.6537,-11.44785 -3.816,-16.748c2.12,-5.3 6.996,-9.858 14.628,-13.674c16.112,-8.056 37.0997,-9.57515 62.964,-4.558c-6.0773,-11.09465 -1.908,-20.246 12.508,-27.454c7.632,-3.816 16.3947,-6.07735 26.288,-6.784c10.0347,-0.77735 20.2107,-0.14135 30.528,1.908c10.4586,2.12 20.2107,5.44135 29.256,9.964c13.851,6.9255 22.0483,14.27485 24.592,22.048c2.6857,7.84415 -1.696,14.628 -13.144,20.352c-13.285,6.6425 -31.8,8.127 -55.544,4.452z" stroke="hsl(0, 100%, 40%)" stroke-width="2" fill="none"/><path d="M152.89037,99.04466c5.229,7.1375 6.996,13.462 5.3,18.974c-1.414,5.512 -6.289,10.3525 -14.628,14.522c-7.773,3.8865 -17.102,6.36 -27.984,7.42c-10.741,0.9895 -22.048,0.353 -33.92,-1.908c-11.872,-2.261 -23.32,-6.148 -34.344,-11.66c-10.7413,-5.37065 -18.303,-10.9885 -22.684,-16.854c-4.381,-5.8655 -5.6537,-11.44785 -3.816,-16.748c2.12,-5.3 6.996,-9.858 14.628,-13.674c16.112,-8.056 37.0997,-9.57515 62.964,-4.558c-6.0773,-11.09465 -1.908,-20.246 12.508,-27.454c7.632,-3.816 16.3947,-6.07735 26.288,-6.784c10.0347,-0.77735 20.2107,-0.14135 30.528,1.908c10.4586,2.12 20.2107,5.44135 29.256,9.964c13.851,6.9255 22.0483,14.27485 24.592,22.048c2.6857,7.84415 -1.696,14.628 -13.144,20.352c-13.285,6.6425 -31.8,8.127 -55.544,4.452z" fill="hsl(0, 100%, 40%)" opacity="0.3"/><path d="M176.63437,62.58066c-5.936,-2.968 -12.1547,-4.52265 -18.656,-4.664c-6.36,-0.212 -12.437,1.1305 -18.232,4.028c-5.229,2.6145 -7.9143,5.51185 -8.056,8.692c0.0003,3.10915 2.049,7.0315 6.148,11.766l2.756,2.862c8.339,0.9185 15.335,1.0245 20.988,0.318c5.795,-0.7775 11.165,-2.4025 16.112,-4.876c5.371,-2.6855 7.9857,-5.61785 7.844,-8.798c-0.0003,-3.25085 -2.968,-6.36 -8.904,-9.328z" stroke="hsl(120, 100%, 40%)" stroke-width="2" fill="none"/><path d="M176.63437,62.58066c-5.936,-2.968 -12.1547,-4.52265 -18.656,-4.664c-6.36,-0.212 -12.437,1.1305 -18.232,4.028c-5.229,2.6145 -7.9143,5.51185 -8.056,8.692c0.0003,3.10915 2.049,7.0315 6.148,11.766l2.756,2.862c8.339,0.9185 15.335,1.0245 20.988,0.318c5.795,-0.7775 11.165,-2.4025 16.112,-4.876c5.371,-2.6855 7.9857,-5.61785 7.844,-8.798c-0.0003,-3.25085 -2.968,-6.36 -8.904,-9.328z" fill="hsl(120, 100%, 40%)" opacity="0.3"/><path d="M70.21037,115.79266c7.349,3.6745 14.84,5.583 22.472,5.724c7.774,0.212 14.699,-1.2015 20.776,-4.24c6.077,-3.0385 9.116,-6.325 9.116,-9.858c0,-3.533 -2.898,-8.374 -8.692,-14.522l-4.452,-4.558c-16.112,-2.544 -30.245,-0.7775 -42.4,5.3c-6.36,3.18 -9.257,6.7485 -8.692,10.706c0.565,3.9575 4.5227,7.77335 11.872,11.448z" stroke="hsl(240, 100%, 40%)" stroke-width="2" fill="none"/><path d="M70.21037,115.79266c7.349,3.6745 14.84,5.583 22.472,5.724c7.774,0.212 14.699,-1.2015 20.776,-4.24c6.077,-3.0385 9.116,-6.325 9.116,-9.858c0,-3.533 -2.898,-8.374 -8.692,-14.522l-4.452,-4.558c-16.112,-2.544 -30.245,-0.7775 -42.4,5.3c-6.36,3.18 -9.257,6.7485 -8.692,10.706c0.565,3.9575 4.5227,7.77335 11.872,11.448z" fill="hsl(240, 100%, 40%)" opacity="0.3"/></svg>
@@ -14,7 +53,7 @@ Major progress today:
 
 This all represents a major step forward for the project, with output verging on professionally useful for many cases.
 
-Wall boundaries continue to be a sticking point, but are not having a meaning impact on the visual output.
+Wall boundaries continue to be a sticking point, but are not having a meaningful impact on the visual output.
 
 ## 2025-02-03 Update 1
 
