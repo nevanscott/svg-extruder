@@ -1,0 +1,50 @@
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: max-content min-content;
+  background-color: var(--color-chrome);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.comparison:has(> header) {
+  grid-template-rows: min-content max-content max-content;
+}
+.comparison > header {
+  padding: 0.5em 1rem;
+  grid-column: span 2;
+}
+.comparison > header h1,
+.comparison > header h2 {
+  margin: 0;
+}
+
+.comparison > * {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+}
+
+.comparison > :not(:last-child) {
+  border-right: 1px solid var(--color-border);
+}
+
+.comparison .container {
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-surface);
+}
+
+.container svg {
+  object-fit: contain;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.comparison figcaption {
+  border-top: 1px solid var(--color-border);
+  padding: 0.5em 1rem;
+}

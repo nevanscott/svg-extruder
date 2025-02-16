@@ -3,22 +3,24 @@ title: Demos
 layout: default
 ---
 
-{% for demo in demos %}
-
-<div class="item">
-  <h2>
-    <a href="/demos/{{ demo.filename | slugify }}">{{ demo.filename }}</a>
-  </h2>
-  <div class="svg-container">
-    <div>
-      <h3>Before</h3>
-      {{ demo.input.svg }}
+<div class="grid">
+  {% for demo in demos %}
+  <article class="demo">
+    <div class="comparison">
+      <header>
+        <h2>
+          <a href="/demos/{{ demo.filename | slugify }}">{{ demo.filename }}</a>
+        </h2>
+      </header>
+      <figure>
+        <div class="container">{{ demo.input.svg }}</div>
+        <figcaption>Before</figcaption>
+      </figure>
+      <figure>
+        <div class="container">{{ demo.output.svg }}</div>
+        <figcaption>After</figcaption>
+      </figure>
     </div>
-    <div>
-      <h3>After</h3>
-      {{ demo.output.svg }}
-    </div>
-  </div>
+  </article>
+  {% endfor %}
 </div>
-
-{% endfor %}

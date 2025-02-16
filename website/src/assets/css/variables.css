@@ -4,6 +4,7 @@
   --color-background: #fafafa;
   --color-border: #eee;
   --color-surface: white;
+  --color-chrome: #f8f8f8;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -12,5 +13,6 @@
     --color-background: #191919;
     --color-border: #333;
     --color-surface: #111;
+    --color-chrome: #222;
   }
 }

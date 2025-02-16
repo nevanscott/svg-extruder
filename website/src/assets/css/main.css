@@ -10,8 +10,9 @@
 /* Component styles */
 @import "./components/banner.css";
 @import "./components/button.css";
+@import "./components/comparison.css";
+@import "./components/hero.css";
 @import "./components/logo.css";
-@import "./components/svg-container.css";
 
 /* Page-specific styles */
 @import "./pages/dingus.css";

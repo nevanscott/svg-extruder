@@ -3,30 +3,17 @@ title: SVG Extruder
 layout: default
 ---
 
-<article>
-  <p>
-    <strong>SVG Extruder</strong> takes a simple birds-eye view SVG and
-    generates a beautiful isometric rendering.
-  </p>
-  <p>At least in theory.</p>
-</article>
-
-{% for demo in demos %}
-
-<div class="item">
-  <h2>
-    <a href="/demos/{{ demo.filename | slugify }}">{{ demo.filename }}</a>
-  </h2>
-  <div class="svg-container">
-    <div>
-      <h3>Before</h3>
-      {{ demo.input.svg }}
-    </div>
-    <div>
-      <h3>After</h3>
-      {{ demo.output.svg }}
-    </div>
+<article class="hero">
+  <div>
+    <p>
+      <strong>SVG Extruder</strong> takes a simple birds-eye view SVG and
+      generates a beautiful isometric rendering.
+    </p>
+    <p>At least in theory.</p>
+    <p>
+      <a class="button" href="/pipeline/">How it works</a>
+      <a class="button" href="/dingus/">Try it out</a>
+    </p>
   </div>
-</div>
-
-{% endfor %}
+  <div>{% include "calendar.html" %}</div>
+</article>
