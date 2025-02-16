@@ -71,7 +71,11 @@ layout: default
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/xml/xml.min.js"></script>
 
+<script type="module" src="/assets/transform.js"></script>
+
 <script type="module">
+  import { transformSvgToIsometric } from "/assets/transform.js";
+
   // Hide the dingus until codemirror is loaded
   document.querySelector(".dingus").hidden = true;
 
@@ -93,17 +97,13 @@ layout: default
   editor.on("change", () => {
     document.querySelector(".dingus").hidden = false;
   });
-</script>
-
-<script type="module" src="/assets/transform.js"></script>
-
-<script type="module">
-  import { transformSvgToIsometric } from "/assets/transform.js";
 
   document
     .getElementById("transformButton")
     .addEventListener("click", async () => {
-      const svgInput = document.getElementById("svgInput").value;
+      const svgInput =
+        (editor && editor.getValue()) ||
+        document.getElementById("svgInput").value;
       if (!svgInput.trim()) {
         alert("Please paste valid SVG code!");
         return;
