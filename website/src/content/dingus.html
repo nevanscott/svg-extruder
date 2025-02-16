@@ -74,10 +74,10 @@ layout: default
 <script type="module" src="/assets/transform.js"></script>
 
 <script type="module">
-  import { transformSvgToIsometric } from "/assets/transform.js";
-
   // Hide the dingus until codemirror is loaded
   document.querySelector(".dingus").hidden = true;
+
+  import { transformSvgToIsometric } from "/assets/transform.js";
 
   // Enhance the textarea with codemirror for svg editing
   const svgInput = document.getElementById("svgInput");
