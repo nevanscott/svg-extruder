@@ -3,20 +3,44 @@ title: Dingus
 layout: default
 ---
 
-<label for="svgInput">Paste your SVG code here:</label>
-<textarea id="svgInput" placeholder="Paste SVG here...">
+<div class="dingus">
+  <div class="dingus__input">
+    <label for="svgInput">Paste your SVG code here:</label>
+    <textarea id="svgInput" placeholder="Paste SVG here...">
 <svg width="143" height="126" viewBox="0 0 143 126" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect x="24" y="24" width="95" height="78" rx="24" fill="#D50C34"/>
   <path d="M85.64 65.44V73.032H82V80H71.912L71.86 73.032H57.04V66.324L66.764 43.548L75.552 46.668L67.596 65.44H71.964L73.16 57.744H82V65.44H85.64Z" fill="white"/>
 </svg>
 
-</textarea>
-<br />
-<button id="transformButton">Transform</button>
-<button id="downloadButton" disabled>Download</button>
-<div id="output"></div>
-
+</textarea
+    >
+    <button id="transformButton">Transform</button>
+  </div>
+  <div class="dingus__output" hidden>
+    <div class="row">
+      <figure hidden>
+        <div class="svg" id="input"></div>
+        <figcaption>
+          Original SVG
+          <button class="copy-svg">Copy SVG</button>
+        </figcaption>
+      </figure>
+      <figure hidden>
+        <div class="svg" id="output"></div>
+        <figcaption>
+          Transformed SVG
+          <button class="copy-svg">Copy SVG</button>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</div>
 <style>
+  .dingus {
+    display: flex;
+    gap: 4rem;
+    margin-top: 2rem;
+  }
   textarea {
     width: 100%;
     height: 200px;
@@ -43,22 +67,21 @@ layout: default
       }
 
       try {
-        const { svg: transformedSvg } = await transformSvgToIsometric(svgInput); // Use the imported function
-        console.log(transformedSvg);
+        const { svg: transformedSvg, steps } = await transformSvgToIsometric(
+          svgInput
+        ); // Use the imported function
+        const inputSvg = steps[0].svg;
+        const inputDiv = document.getElementById("input");
         const outputDiv = document.getElementById("output");
+        inputDiv.innerHTML = inputSvg; // Render the input SVG
         outputDiv.innerHTML = transformedSvg; // Render the transformed SVG
-        document.getElementById("downloadButton").disabled = false;
 
-        // Enable download
-        document.getElementById("downloadButton").onclick = () => {
-          const blob = new Blob([transformedSvg], { type: "image/svg+xml" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "transformed.svg";
-          a.click();
-          URL.revokeObjectURL(url);
-        };
+        // Show the dingus output
+        document.querySelector(".dingus__output").hidden = false;
+
+        // Show the figures
+        inputDiv.parentElement.hidden = false;
+        outputDiv.parentElement.hidden = false;
       } catch (error) {
         alert(
           "An error occurred while transforming the SVG. Check the console for details."
@@ -66,4 +89,18 @@ layout: default
         console.error(error);
       }
     });
+
+  document.querySelectorAll(".copy-svg").forEach((button) => {
+    button.addEventListener("click", () => {
+      const svg = button.closest("figure").querySelector("svg");
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svg);
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = svgString;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempTextArea);
+    });
+  });
 </script>
