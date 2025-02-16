@@ -11,34 +11,42 @@ layout: default
 </noscript>
 
 <div class="dingus">
-  <!-- Top row: Transform and Copy buttons -->
-  <div class="dingus__actions">
-    <button id="transformButton">Transform</button>
-    <button class="copy-svg" data-target="input">Copy Original SVG</button>
-    <button class="copy-svg" data-target="output">Copy Transformed SVG</button>
-  </div>
-
   <!-- Editor section -->
   <div class="dingus__editor">
-    <label for="svgInput">Paste your SVG code here:</label>
-    <textarea id="svgInput" placeholder="Paste SVG here...">
+    <header>
+      <h2>SVG Editor</h2>
+      <button id="transformButton">Transform</button>
+    </header>
+    <div class="editor">
+      <label for="svgInput">Paste your SVG code here:</label>
+      <textarea id="svgInput" placeholder="Paste SVG here...">
 <svg width="143" height="126" viewBox="0 0 143 126" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect x="24" y="24" width="95" height="78" rx="24" fill="#D50C34"/>
   <path d="M85.64 65.44V73.032H82V80H71.912L71.86 73.032H57.04V66.324L66.764 43.548L75.552 46.668L67.596 65.44H71.964L73.16 57.744H82V65.44H85.64Z" fill="white"/>
 </svg>
-    </textarea>
+    </textarea
+      >
+    </div>
   </div>
 
   <!-- Original SVG section -->
   <div class="dingus__original">
+    <header>
+      <h2>Original SVG</h2>
+      <button class="copy-svg" data-target="input">Copy Original SVG</button>
+    </header>
     <div id="input" class="svg-container"></div>
-    <figcaption>Original SVG</figcaption>
   </div>
 
   <!-- Transformed SVG section -->
   <div class="dingus__transformed">
+    <header>
+      <h2>Transformed SVG</h2>
+      <button class="copy-svg" data-target="output">
+        Copy Transformed SVG
+      </button>
+    </header>
     <div id="output" class="svg-container"></div>
-    <figcaption>Transformed SVG</figcaption>
   </div>
 </div>
 
