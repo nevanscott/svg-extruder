@@ -101,9 +101,11 @@ layout: default
 
   // Show the dingus if codemirror fails to load
   window.addEventListener("load", () => {
-    if (!editor) {
-      document.querySelector(".dingus").hidden = false;
-    }
+    setTimeout(() => {
+      if (!editor) {
+        document.querySelector(".dingus").hidden = false;
+      }
+    }, 500);
   });
 
   document
