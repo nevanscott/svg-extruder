@@ -1,4 +1,40 @@
 .hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+
+  padding: 2rem 4rem;
+}
+
+.hero > :first-child {
+  display: grid;
+  align-items: center;
+}
+
+.hero svg {
+  margin-block: -6rem;
+}
+
+.hero p:first-of-type {
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.hero .button {
+  display: inline-block;
+  border: 1px solid var(--color-border);
+  padding: 0.5em 1em;
+  border-radius: 0.25em;
+  background-color: var(--color-chrome);
+  color: inherit;
+}
+.hero .button + .button {
+  margin-inline-start: 1em;
+}
+.hero .button:hover {
+  text-decoration: none;
 }
