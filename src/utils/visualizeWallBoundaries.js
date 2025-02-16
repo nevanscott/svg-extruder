@@ -1,14 +1,18 @@
-import { JSDOM } from "jsdom";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+} from "../utils/environment.js";
 
-// Utility: Visualize wall boundaries
+/**
+ * Visualizes wall boundaries by adding circles and labels to the SVG.
+ */
 export function visualizeWallBoundaries(svg, boundaryPoints) {
-  const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const doc = dom.window.document;
-  const svgElement = doc.querySelector("svg");
+  const { doc, svgElement } = parseSvg(svg); // Use parseSvg from environment.js
 
   boundaryPoints.forEach(({ x, y }, index) => {
     // 📦 Create a group <g> to contain both the circle and text
-    const group = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+    const group = createSvgElement(doc, "g");
 
     // 🏷 Add data attributes for debugging
     group.setAttribute("data-index", index + 1);
@@ -16,7 +20,7 @@ export function visualizeWallBoundaries(svg, boundaryPoints) {
     group.setAttribute("data-y", y);
 
     // 🎯 Create the numbered circle
-    const circle = doc.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const circle = createSvgElement(doc, "circle");
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
     circle.setAttribute("r", "6"); // Bigger size
@@ -25,7 +29,7 @@ export function visualizeWallBoundaries(svg, boundaryPoints) {
     circle.setAttribute("stroke-width", "1"); // Thickness of the outline
 
     // 🏷 Create the number label
-    const text = doc.createElementNS("http://www.w3.org/2000/svg", "text");
+    const text = createSvgElement(doc, "text");
     text.setAttribute("x", x);
     text.setAttribute("y", y);
     text.setAttribute("font-size", "6");
@@ -42,5 +46,5 @@ export function visualizeWallBoundaries(svg, boundaryPoints) {
     svgElement.appendChild(group);
   });
 
-  return dom.serialize();
+  return serializeSvg(doc); // Serialize the updated SVG using serializeSvg from environment.js
 }

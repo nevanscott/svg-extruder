@@ -1,30 +1,28 @@
-import { JSDOM } from "jsdom";
 import paper from "paper";
 import { extractSegment } from "../utils/extractSegment.js";
 import { darkenColor } from "../utils/darkenColor.js";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+  removeElements,
+} from "../utils/environment.js";
 
 export default ({ svg, shapes }) => {
   // ✅ Preserve original viewBox and dimensions
-  const originalDom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const originalDoc = originalDom.window.document;
-  const originalSvg = originalDoc.querySelector("svg");
+  const { doc: originalDoc, svgElement: originalSvg } = parseSvg(svg);
 
   const viewBox = originalSvg.getAttribute("viewBox") || "0 0 100 100";
   const width = originalSvg.getAttribute("width") || "100";
   const height = originalSvg.getAttribute("height") || "100";
 
   // ✅ Create new clean & debug SVGs with preserved viewBox & dimensions
-  const cleanDom = new JSDOM(
-    `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
+  const { doc: cleanDoc, svgElement: cleanSvgElement } = parseSvg(
+    '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
   );
-  const cleanDoc = cleanDom.window.document;
-  const cleanSvgElement = cleanDoc.querySelector("svg");
-
-  const debugDom = new JSDOM(
-    `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
+  const { doc: debugDoc, svgElement: debugSvgElement } = parseSvg(
+    '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
   );
-  const debugDoc = debugDom.window.document;
-  const debugSvgElement = debugDoc.querySelector("svg");
 
   // ✅ Set viewBox & dimensions
   [cleanSvgElement, debugSvgElement].forEach((svgEl) => {
@@ -102,26 +100,22 @@ export default ({ svg, shapes }) => {
           .trim();
 
         // ✅ Create clean wall element
-        const wallElement = cleanDoc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        wallElement.setAttribute("d", wallD);
-        wallElement.setAttribute("fill", wallColor);
-        wallElement.setAttribute("stroke", "black");
-        wallElement.setAttribute("stroke-width", "0.5");
+        const wallElement = createSvgElement(cleanDoc, "path", {
+          d: wallD,
+          fill: wallColor,
+          stroke: "black",
+          "stroke-width": "0.5",
+        });
         cleanSvgElement.appendChild(wallElement);
 
         // ✅ Create debug wall element
-        const debugWallElement = debugDoc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        debugWallElement.setAttribute("d", wallD);
-        debugWallElement.setAttribute("fill", wallColor);
-        debugWallElement.setAttribute("opacity", "0.5");
-        debugWallElement.setAttribute("stroke", "black");
-        debugWallElement.setAttribute("stroke-width", "0.5");
+        const debugWallElement = createSvgElement(debugDoc, "path", {
+          d: wallD,
+          fill: wallColor,
+          opacity: "0.5",
+          stroke: "black",
+          "stroke-width": "0.5",
+        });
         debugSvgElement.appendChild(debugWallElement);
 
         // ✅ Store the wall in the model
@@ -148,20 +142,16 @@ export default ({ svg, shapes }) => {
   shapes.forEach(({ floor }) => {
     if (!floor?.path) return;
 
-    const floorPathClean = cleanDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    floorPathClean.setAttribute("d", floor.path.getAttribute("d"));
-    floorPathClean.setAttribute("fill", floor.fillColor || "gray");
+    const floorPathClean = createSvgElement(cleanDoc, "path", {
+      d: floor.path.getAttribute("d"),
+      fill: floor.fillColor || "gray",
+    });
     cleanSvgElement.prepend(floorPathClean);
 
-    const floorPathDebug = debugDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    floorPathDebug.setAttribute("d", floor.path.getAttribute("d"));
-    floorPathDebug.setAttribute("fill", floor.fillColor || "gray");
+    const floorPathDebug = createSvgElement(debugDoc, "path", {
+      d: floor.path.getAttribute("d"),
+      fill: floor.fillColor || "gray",
+    });
     debugSvgElement.prepend(floorPathDebug);
   });
 
@@ -169,18 +159,16 @@ export default ({ svg, shapes }) => {
   shapes.forEach(({ ceiling }) => {
     if (!ceiling?.path) return;
 
-    const ceilingPath = cleanDoc.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    ceilingPath.setAttribute("d", ceiling.path.getAttribute("d"));
-    ceilingPath.setAttribute("fill", ceiling.fillColor || "gray");
+    const ceilingPath = createSvgElement(cleanDoc, "path", {
+      d: ceiling.path.getAttribute("d"),
+      fill: ceiling.fillColor || "gray",
+    });
     cleanSvgElement.appendChild(ceilingPath);
   });
 
   return {
-    svg: cleanDom.serialize(), // ✅ Clean SVG with floor → walls → ceiling
-    svgDebug: debugDom.serialize(), // ✅ Debug SVG with floor + walls visualized
+    svg: serializeSvg(cleanDoc), // ✅ Clean SVG with floor → walls → ceiling
+    svgDebug: serializeSvg(debugDoc), // ✅ Debug SVG with floor + walls visualized
     shapes,
   };
 };

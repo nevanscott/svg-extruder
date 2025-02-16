@@ -1,12 +1,14 @@
-import { JSDOM } from "jsdom";
 import paper from "paper";
 import { PaperOffset } from "paperjs-offset";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+} from "../utils/environment.js";
 
 export default async ({ svg, svgDebug, shapes }) => {
   // Parse the SVG into a DOM structure
-  const dom = new JSDOM(svg);
-  const doc = dom.window.document;
-  const svgElement = doc.querySelector("svg");
+  const { doc, svgElement } = parseSvg(svg);
 
   // Set up Paper.js
   paper.setup(new paper.Size(100, 100));
@@ -55,13 +57,11 @@ export default async ({ svg, svgDebug, shapes }) => {
         }
 
         // Create a new SVG path element with the outlined path
-        const newPathElement = doc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        newPathElement.setAttribute("d", pathData);
-        newPathElement.setAttribute("fill", strokeColor); // The stroke color becomes the fill
-        newPathElement.setAttribute("stroke", "none"); // Remove the stroke
+        const newPathElement = createSvgElement(doc, "path", {
+          d: pathData,
+          fill: strokeColor, // The stroke color becomes the fill
+          stroke: "none", // Remove the stroke
+        });
 
         // Update the shape model
         return {
@@ -80,30 +80,23 @@ export default async ({ svg, svgDebug, shapes }) => {
   });
 
   // ✅ Create a new debug SVG
-  const debugDom = new JSDOM(
+  const { doc: debugDoc, svgElement: debugSvgElement } = parseSvg(
     `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg" viewBox="${svgElement.getAttribute(
       "viewBox"
     )}" width="${svgElement.getAttribute(
       "width"
     )}" height="${svgElement.getAttribute("height")}"></svg>`
   );
-  const debugDoc = debugDom.window.document;
-  const debugSvgElement = debugDoc.querySelector("svg");
 
   // ✅ Append updated shapes for debugging
   shapes.forEach((shape, index) => {
     try {
-      const debugPath = debugDoc.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      debugPath.setAttribute("d", shape.path?.getAttribute("d") || "");
-      debugPath.setAttribute(
-        "fill",
-        shape.path?.getAttribute("fill") || "none"
-      );
-      debugPath.setAttribute("stroke", "red");
-      debugPath.setAttribute("stroke-width", "1");
+      const debugPath = createSvgElement(debugDoc, "path", {
+        d: shape.path?.getAttribute("d") || "",
+        fill: shape.path?.getAttribute("fill") || "none",
+        stroke: "red",
+        "stroke-width": "1",
+      });
 
       debugSvgElement.appendChild(debugPath);
     } catch (error) {
@@ -112,7 +105,7 @@ export default async ({ svg, svgDebug, shapes }) => {
   });
 
   // Serialize debug SVG
-  svgDebug = debugDom.serialize();
+  svgDebug = serializeSvg(debugDoc);
 
   return { svg, svgDebug, shapes };
 };

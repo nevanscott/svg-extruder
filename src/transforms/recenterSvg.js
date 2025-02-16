@@ -1,15 +1,17 @@
-import { JSDOM } from "jsdom";
 import translateIsometricPath from "./translateIsometricPath.js";
 import { getPathBoundingBox } from "../utils/getPathBoundingBox.js";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+} from "../utils/environment.js";
 
 /**
  * Recenter an SVG based on its bounding box.
  * If `paths` are provided, it will adjust them as well.
  */
 export default function recenterSvg(svg, paths = [], padding = 20) {
-  const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const doc = dom.window.document;
-  const svgElement = doc.querySelector("svg");
+  const { doc, svgElement } = parseSvg(svg);
 
   if (!svgElement) {
     console.warn("recenterSvg: No valid SVG element found.");
@@ -71,5 +73,5 @@ export default function recenterSvg(svg, paths = [], padding = 20) {
   svgElement.querySelectorAll("path").forEach((path) => path.remove());
   paths.forEach((path) => svgElement.appendChild(path.cloneNode(true)));
 
-  return { svg: dom.serialize(), paths };
+  return { svg: serializeSvg(doc), paths };
 }

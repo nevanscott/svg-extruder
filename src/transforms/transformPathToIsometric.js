@@ -1,12 +1,12 @@
-import { JSDOM } from "jsdom";
+import { parseSvg, createSvgElement } from "../utils/environment.js";
 
+/**
+ * Recenter an SVG path based on isometric transformation.
+ * The function transforms the given path data to an isometric projection.
+ */
 export default function transformPathToIsometric(path, z = 0) {
-  const dom = new JSDOM();
-  const doc = dom.window.document;
-  const isometricPath = doc.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "path"
-  );
+  const { doc } = parseSvg('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+  const isometricPath = createSvgElement(doc, "path");
 
   const d = path.getAttribute("d");
   const fill = path.getAttribute("fill") || "none";

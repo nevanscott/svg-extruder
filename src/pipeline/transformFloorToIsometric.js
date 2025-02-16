@@ -1,10 +1,13 @@
 import transformPathToIsometric from "../transforms/transformPathToIsometric.js";
-import { JSDOM } from "jsdom";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+} from "../utils/environment.js";
 
 export default ({ svg, shapes }) => {
-  const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const doc = dom.window.document;
-  const svgElement = doc.querySelector("svg");
+  // ✅ Parse the SVG into a DOM structure
+  const { doc, svgElement } = parseSvg(svg);
 
   // ✅ Apply isometric transformation while preserving all floor properties
   shapes = shapes.map((shape) => ({
@@ -23,14 +26,15 @@ export default ({ svg, shapes }) => {
   shapes.forEach(({ floor }) => {
     if (!floor.path) return;
 
-    const floorPath = doc.createElementNS("http://www.w3.org/2000/svg", "path");
-    floorPath.setAttribute("d", floor.path.getAttribute("d"));
-    floorPath.setAttribute("fill", floor.fillColor || "gray"); // Maintain color
+    const floorPath = createSvgElement(doc, "path", {
+      d: floor.path.getAttribute("d"),
+      fill: floor.fillColor || "gray", // Maintain color
+    });
 
     svgElement.appendChild(floorPath);
   });
 
   // ✅ Ensure `svgDebug` is identical to `svg`
-  const updatedSvg = dom.serialize();
+  const updatedSvg = serializeSvg(doc);
   return { svg: updatedSvg, svgDebug: updatedSvg, shapes };
 };

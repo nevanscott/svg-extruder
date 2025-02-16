@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { parseSvg, createSvgElement } from "../utils/environment.js";
 
 /**
  * Converts an SVG shape element into a path element.
@@ -8,9 +8,8 @@ import { JSDOM } from "jsdom";
  * @returns {SVGPathElement} - The resulting path element.
  */
 export default function createPathFromShape(shape) {
-  const dom = new JSDOM();
-  const document = dom.window.document;
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const { doc } = parseSvg('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+  const path = createSvgElement(doc, "path");
 
   const type = shape.tagName.toLowerCase();
   let d = ""; // Path data

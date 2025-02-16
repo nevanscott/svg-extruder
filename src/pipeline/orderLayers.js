@@ -1,5 +1,9 @@
-import { JSDOM } from "jsdom";
 import { getPathBoundingBox } from "../utils/getPathBoundingBox.js";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+} from "../utils/environment.js";
 
 /**
  * Compute depth as a percentage of how far the bottom-most Y is from the bottom of the viewBox.
@@ -14,9 +18,7 @@ function computeDepth(bbox, viewBox) {
 
 export default ({ svg, shapes }) => {
   // ✅ Parse the original SVG
-  const originalDom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const originalDoc = originalDom.window.document;
-  const originalSvg = originalDoc.querySelector("svg");
+  const { doc: originalDoc, svgElement: originalSvg } = parseSvg(svg);
 
   // ✅ Extract viewBox dimensions
   const viewBox = originalSvg.getAttribute("viewBox") || "0 0 100 100";
@@ -24,17 +26,12 @@ export default ({ svg, shapes }) => {
   const height = originalSvg.getAttribute("height") || "100";
 
   // ✅ Create new clean & debug SVGs
-  const cleanDom = new JSDOM(
-    `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
+  const { doc: cleanDoc, svgElement: cleanSvgElement } = parseSvg(
+    '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
   );
-  const cleanDoc = cleanDom.window.document;
-  const cleanSvgElement = cleanDoc.querySelector("svg");
-
-  const debugDom = new JSDOM(
-    `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
+  const { doc: debugDoc, svgElement: debugSvgElement } = parseSvg(
+    '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
   );
-  const debugDoc = debugDom.window.document;
-  const debugSvgElement = debugDoc.querySelector("svg");
 
   // ✅ Set viewBox & dimensions
   [cleanSvgElement, debugSvgElement].forEach((svgEl) => {
@@ -92,12 +89,10 @@ export default ({ svg, shapes }) => {
 
     // Render floors first (original stacking order)
     shapesAtElevation.forEach(({ floor }) => {
-      const floorPath = cleanDoc.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      floorPath.setAttribute("d", floor.path.getAttribute("d"));
-      floorPath.setAttribute("fill", floor.fillColor || "gray");
+      const floorPath = createSvgElement(cleanDoc, "path", {
+        d: floor.path.getAttribute("d"),
+        fill: floor.fillColor || "gray",
+      });
       cleanSvgElement.appendChild(floorPath);
     });
 
@@ -106,24 +101,20 @@ export default ({ svg, shapes }) => {
       .flatMap((shape) => shape.walls.flatMap((wall) => wall.sides))
       .sort((a, b) => b.depth - a.depth)
       .forEach((side) => {
-        const wallPath = cleanDoc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        wallPath.setAttribute("d", side.path.getAttribute("d"));
-        wallPath.setAttribute("fill", side.fillColor || "gray");
+        const wallPath = createSvgElement(cleanDoc, "path", {
+          d: side.path.getAttribute("d"),
+          fill: side.fillColor || "gray",
+        });
         cleanSvgElement.appendChild(wallPath);
       });
 
     // Render ceilings last (original stacking order)
     shapesAtElevation.forEach(({ ceiling }) => {
       if (ceiling) {
-        const ceilingPath = cleanDoc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        ceilingPath.setAttribute("d", ceiling.path.getAttribute("d"));
-        ceilingPath.setAttribute("fill", ceiling.fillColor || "gray");
+        const ceilingPath = createSvgElement(cleanDoc, "path", {
+          d: ceiling.path.getAttribute("d"),
+          fill: ceiling.fillColor || "gray",
+        });
         cleanSvgElement.appendChild(ceilingPath);
       }
     });
@@ -131,23 +122,25 @@ export default ({ svg, shapes }) => {
 
   // ▶️ **Debug SVG (Semi-Transparent with Bounding Boxes & Depth Numbers)**
   function drawBBoxWithDepth(bbox, depth, color, doc) {
-    const rect = doc.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", bbox.minX);
-    rect.setAttribute("y", bbox.minY);
-    rect.setAttribute("width", bbox.maxX - bbox.minX);
-    rect.setAttribute("height", bbox.maxY - bbox.minY);
-    rect.setAttribute("fill", "none");
-    rect.setAttribute("stroke", color);
-    rect.setAttribute("stroke-width", "0.5");
+    const rect = createSvgElement(doc, "rect", {
+      x: bbox.minX,
+      y: bbox.minY,
+      width: bbox.maxX - bbox.minX,
+      height: bbox.maxY - bbox.minY,
+      fill: "none",
+      stroke: color,
+      "stroke-width": "0.5",
+    });
 
     // ✅ Add depth label
-    const text = doc.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", bbox.minX + (bbox.maxX - bbox.minX) / 2);
-    text.setAttribute("y", bbox.maxY + 5); // Positioned slightly below the bounding box
-    text.setAttribute("fill", color);
-    text.setAttribute("text-anchor", "middle");
-    text.setAttribute("font-size", "6");
-    text.setAttribute("font-family", "Arial");
+    const text = createSvgElement(doc, "text", {
+      x: bbox.minX + (bbox.maxX - bbox.minX) / 2,
+      y: bbox.maxY + 5, // Positioned slightly below the bounding box
+      fill: color,
+      "text-anchor": "middle",
+      "font-size": "6",
+      "font-family": "Arial",
+    });
     text.textContent = depth.toFixed(2);
 
     return [rect, text];
@@ -158,13 +151,11 @@ export default ({ svg, shapes }) => {
 
     // Debug floors
     shapesAtElevation.forEach(({ floor }) => {
-      const debugFloor = debugDoc.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      debugFloor.setAttribute("d", floor.path.getAttribute("d"));
-      debugFloor.setAttribute("fill", floor.fillColor || "gray");
-      debugFloor.setAttribute("opacity", "0.5");
+      const debugFloor = createSvgElement(debugDoc, "path", {
+        d: floor.path.getAttribute("d"),
+        fill: floor.fillColor || "gray",
+        opacity: "0.5",
+      });
       debugSvgElement.appendChild(debugFloor);
 
       const floorBBoxElements = drawBBoxWithDepth(
@@ -181,15 +172,13 @@ export default ({ svg, shapes }) => {
       .flatMap((shape) => shape.walls.flatMap((wall) => wall.sides))
       .sort((a, b) => b.depth - a.depth)
       .forEach((side) => {
-        const debugWall = debugDoc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        debugWall.setAttribute("d", side.path.getAttribute("d"));
-        debugWall.setAttribute("fill", side.fillColor || "gray");
-        debugWall.setAttribute("opacity", "0.5");
-        debugWall.setAttribute("stroke", "black");
-        debugWall.setAttribute("stroke-width", "0.5");
+        const debugWall = createSvgElement(debugDoc, "path", {
+          d: side.path.getAttribute("d"),
+          fill: side.fillColor || "gray",
+          opacity: "0.5",
+          stroke: "black",
+          "stroke-width": "0.5",
+        });
         debugSvgElement.appendChild(debugWall);
 
         const wallBBoxElements = drawBBoxWithDepth(
@@ -204,21 +193,19 @@ export default ({ svg, shapes }) => {
     // Debug ceilings
     shapesAtElevation.forEach(({ ceiling }) => {
       if (ceiling) {
-        const debugCeiling = debugDoc.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        debugCeiling.setAttribute("d", ceiling.path.getAttribute("d"));
-        debugCeiling.setAttribute("fill", ceiling.fillColor || "gray");
-        debugCeiling.setAttribute("opacity", "0.5");
+        const debugCeiling = createSvgElement(debugDoc, "path", {
+          d: ceiling.path.getAttribute("d"),
+          fill: ceiling.fillColor || "gray",
+          opacity: "0.5",
+        });
         debugSvgElement.appendChild(debugCeiling);
       }
     });
   });
 
   return {
-    svg: cleanDom.serialize(), // ✅ Clean SVG with proper layering
-    svgDebug: debugDom.serialize(), // ✅ Debug SVG with bounding boxes & depth labels
+    svg: serializeSvg(cleanDoc), // ✅ Clean SVG with proper layering
+    svgDebug: serializeSvg(debugDoc), // ✅ Debug SVG with bounding boxes & depth labels
     shapes,
   };
 };

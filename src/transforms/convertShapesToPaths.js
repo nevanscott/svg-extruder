@@ -1,10 +1,9 @@
-import { JSDOM } from "jsdom";
 import createPathFromShape from "../utils/createPathFromShape.js";
+import { parseSvg, serializeSvg } from "../utils/environment.js";
 
 export default async function convertShapesToPaths(svg) {
   // Parse the SVG string into an SVG document
-  const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const doc = dom.window.document;
+  const { doc } = parseSvg(svg);
 
   // Find all shape elements (rect, circle, ellipse, line, polyline, polygon)
   const shapes = Array.from(
@@ -18,7 +17,7 @@ export default async function convertShapesToPaths(svg) {
   });
 
   // Serialize the SVG document back to a string
-  svg = dom.serialize();
+  svg = serializeSvg(doc);
 
   return svg;
 }

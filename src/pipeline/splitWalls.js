@@ -1,11 +1,13 @@
-import { JSDOM } from "jsdom";
 import paper from "paper";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+} from "../utils/environment.js";
 
 export default ({ svg, shapes }) => {
   // ✅ Generate a new debug SVG
-  const debugDom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const debugDoc = debugDom.window.document;
-  const debugSvgElement = debugDoc.querySelector("svg");
+  const { doc: debugDoc, svgElement: debugSvgElement } = parseSvg(svg);
 
   // ✅ Remove all non-floor paths
   debugSvgElement.querySelectorAll("path").forEach((path) => path.remove());
@@ -21,44 +23,28 @@ export default ({ svg, shapes }) => {
     // ✅ Decompose compound paths into individual sub-paths
     const subPaths = floorPath.children || [floorPath];
 
-    // ✅ Create a DOM to generate SVG elements
-    const dom = new JSDOM(
-      `<!DOCTYPE html><svg xmlns="http://www.w3.org/2000/svg"></svg>`
-    );
-    const doc = dom.window.document;
-
     // ✅ Process each sub-path into a wall
     const walls = subPaths.map((subPath, index) => {
       // Get the path data for the sub-path
       const subPathD = subPath.exportSVG().getAttribute("d");
 
       // Create an SVG `path` element for this sub-path
-      const pathElement = doc.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      pathElement.setAttribute("d", subPathD);
+      const pathElement = createSvgElement(debugDoc, "path", {
+        d: subPathD,
+        fill: `hsl(${(index * 360) / subPaths.length}, 100%, 40%)`, // Fill color based on hue
+        opacity: "0.3", // Semi-transparent for debugging
+      });
 
       // Add an outline for visualization
-      const outlineElement = debugDoc.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      outlineElement.setAttribute("d", subPathD);
+      const outlineElement = createSvgElement(debugDoc, "path", {
+        d: subPathD,
+        stroke: `hsl(${(index * 360) / subPaths.length}, 100%, 40%)`,
+        "stroke-width": "2",
+        fill: "none",
+      });
 
-      // Assign a unique solid color to the outline
-      const hue = (index * 360) / subPaths.length; // Unique hue
-      const color = `hsl(${hue}, 100%, 40%)`;
-      outlineElement.setAttribute("stroke", color);
-      outlineElement.setAttribute("stroke-width", "2");
-      outlineElement.setAttribute("fill", "none");
-
-      // Append the outline to the debug SVG
+      // Append the outline and path element to the debug SVG
       debugSvgElement.appendChild(outlineElement);
-
-      // Add the path element itself (optional visualization of the base)
-      pathElement.setAttribute("fill", color);
-      pathElement.setAttribute("opacity", "0.3"); // Semi-transparent for debugging
       debugSvgElement.appendChild(pathElement);
 
       return {
@@ -76,7 +62,7 @@ export default ({ svg, shapes }) => {
 
   return {
     svg, // ✅ Keep original SVG unchanged
-    svgDebug: debugDom.serialize(), // ✅ Debug version: walls and outlines visualized
+    svgDebug: serializeSvg(debugDoc), // ✅ Debug version: walls and outlines visualized
     shapes, // ✅ Pass updated shape model
   };
 };

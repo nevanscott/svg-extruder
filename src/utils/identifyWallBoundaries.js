@@ -1,14 +1,29 @@
-import { createCanvas } from "canvas";
 import paper from "paper";
 
-/**
- * Identifies boundary points in an SVG path:
- * - Detects **sharp corners** (angle-based)
- * - Finds **local extrema** along curved segments (only vertical extrema)
- * - Ensures **inner concave intersections** are included
- */
+// Dynamically import canvas only if in Node.js
+let createCanvas;
+if (typeof window === "undefined") {
+  import("canvas").then((canvasModule) => {
+    createCanvas = canvasModule.createCanvas;
+  });
+}
+
+// Helper function to detect sharp corners, vertical extrema, concave intersections, etc.
 export function identifyWallBoundaries(pathD) {
-  const canvas = createCanvas(100, 100);
+  let canvas;
+  let isNode = typeof window === "undefined"; // Check if we're in Node.js
+
+  // In Node.js, use canvas to set up Paper.js
+  if (isNode) {
+    if (!createCanvas) {
+      throw new Error("Canvas module is not available yet");
+    }
+    canvas = createCanvas(100, 100);
+  } else {
+    // In the browser, Paper.js automatically uses the default canvas
+    canvas = document.createElement("canvas");
+  }
+
   paper.setup(canvas);
 
   const path = new paper.Path(pathD);

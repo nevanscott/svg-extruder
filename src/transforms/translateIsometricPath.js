@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { createSvgElement } from "../utils/environment.js";
 
 export default function translateIsometricPath(path, dx = 0, dy = 0, dz = 0) {
   const d = path.getAttribute("d");

@@ -1,6 +1,11 @@
 import { identifyWallBoundaries } from "../utils/identifyWallBoundaries.js";
 import { visualizeWallBoundaries } from "../utils/visualizeWallBoundaries.js";
-import { JSDOM } from "jsdom";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+  removeElements,
+} from "../utils/environment.js";
 
 export default ({ svg, shapes }) => {
   // ✅ Process walls and extract wall boundaries
@@ -25,12 +30,10 @@ export default ({ svg, shapes }) => {
   });
 
   // ✅ Generate debug SVG that includes wall boundaries
-  const debugDom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const debugDoc = debugDom.window.document;
-  const debugSvgElement = debugDoc.querySelector("svg");
+  const { doc: debugDoc, svgElement: debugSvgElement } = parseSvg(svg);
 
   // ✅ Remove all non-floor paths
-  debugSvgElement.querySelectorAll("path").forEach((path) => path.remove());
+  removeElements(debugDoc, "path");
 
   // ✅ Add only floor paths
   shapes.forEach(({ floor }) => {
@@ -39,7 +42,7 @@ export default ({ svg, shapes }) => {
   });
 
   // ✅ Visualize wall boundaries in the debug SVG
-  let debugSvg = debugDom.serialize();
+  let debugSvg = serializeSvg(debugDoc);
   shapes.forEach(({ walls }, shapeIndex) => {
     walls.forEach((wall, wallIndex) => {
       // Visualize boundaries for each wall

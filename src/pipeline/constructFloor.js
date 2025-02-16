@@ -1,9 +1,12 @@
-import { JSDOM } from "jsdom";
+import {
+  parseSvg,
+  serializeSvg,
+  createSvgElement,
+  removeElements,
+} from "../utils/environment.js";
 
 export default ({ svg, shapes }) => {
-  const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-  const doc = dom.window.document;
-  const svgElement = doc.querySelector("svg");
+  const { doc, svgElement } = parseSvg(svg);
 
   // ✅ Preserve shape model and add floor info
   shapes = shapes.map((shape) => ({
@@ -16,20 +19,21 @@ export default ({ svg, shapes }) => {
   }));
 
   // ✅ Remove all existing paths from the main SVG
-  svgElement.querySelectorAll("path").forEach((path) => path.remove());
+  removeElements(doc, "path");
 
   // ✅ Render floor paths with original colors
   shapes.forEach(({ floor }) => {
     if (!floor.path) return;
 
-    const floorPath = doc.createElementNS("http://www.w3.org/2000/svg", "path");
-    floorPath.setAttribute("d", floor.path.getAttribute("d"));
-    floorPath.setAttribute("fill", floor.fillColor || "gray"); // Use original color
+    const floorPath = createSvgElement(doc, "path", {
+      d: floor.path.getAttribute("d"),
+      fill: floor.fillColor || "gray", // Use original color
+    });
 
     svgElement.appendChild(floorPath);
   });
 
   // ✅ Set `svgDebug` to be the same as `svg`
-  const updatedSvg = dom.serialize();
+  const updatedSvg = serializeSvg(doc);
   return { svg: updatedSvg, svgDebug: updatedSvg, shapes };
 };
