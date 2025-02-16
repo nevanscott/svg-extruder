@@ -7,12 +7,12 @@
     "test": "tests"
   },
   "scripts": {
+    "build:css": "postcss website/src/assets/css/main.css -o dist/main.css",
     "build:js": "node build.js",
     "build:eleventy": "eleventy",
-    "build": "npm run build:js && npm run build:eleventy",
+    "build": "npm run build:css && npm run build:js && npm run build:eleventy",
     "dev:website": "npm run build:js && eleventy --serve",
-    "dev": "nodemon --watch src --watch website/src --ext js,css --ignore website/_site --exec 'npm run build && eleventy --serve --quiet'",
-    "start": "npm run dev"
+    "dev": "nodemon --watch src --watch website/src --ext js,css --ignore website/_site --exec 'npm run build && eleventy --serve --quiet'"
   },
   "keywords": [],
   "author": "",
