@@ -1,10 +1,4 @@
 export default function (eleventyConfig) {
-  // Watch for changes in JavaScript files
-  eleventyConfig.addWatchTarget("./website/src/**/*.{js}");
-
-  // Watch CSS files for changes
-  eleventyConfig.addWatchTarget("./website/src/assets/css/");
-
   // JavaScript bundle passthrough
   eleventyConfig.addPassthroughCopy({
     "./dist/transform.js": "assets/transform.js",
@@ -14,6 +8,9 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({
     "./dist/main.css": "assets/css/main.css",
   });
+
+  // Emulate Passthrough Copy During --serve
+  eleventyConfig.setServerPassthroughCopyBehavior("passthrough");
 
   // Specify directories for Eleventy to read from
   return {

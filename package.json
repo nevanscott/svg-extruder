@@ -11,8 +11,8 @@
     "build:js": "node build.js",
     "build:eleventy": "eleventy",
     "build": "npm run build:css && npm run build:js && npm run build:eleventy",
-    "dev:website": "npm run build:js && eleventy --serve",
-    "dev": "nodemon --watch src --watch website/src --ext js,css --ignore website/_site --exec 'npm run build && eleventy --serve --quiet'"
+    "dev:website": "nodemon --watch website/src/assets/css --ext css --exec 'npm run build:css' & eleventy --serve --verbose",
+    "dev": "nodemon --watch website/src/assets/css --watch src --ext js,css --ignore website/_site --exec 'npm run build:css && npm run build' & eleventy --serve --quiet"
   },
   "keywords": [],
   "author": "",
