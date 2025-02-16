@@ -1,0 +1,19 @@
+[role="banner"] {
+  display: flex;
+  gap: 2rem;
+
+  .site-logo {
+    font-size: 2rem;
+    font-weight: bold;
+    color: inherit;
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  nav ul {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+  }
+}

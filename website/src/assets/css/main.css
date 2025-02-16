@@ -8,6 +8,7 @@
 @import "./layout.css";
 
 /* Component styles */
+@import "./components/banner.css";
 @import "./components/button.css";
 @import "./components/logo.css";
 @import "./components/svg-container.css";

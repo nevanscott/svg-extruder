@@ -12,9 +12,7 @@ a {
 a:hover {
   text-decoration: underline;
 }
-h1 {
-  text-align: center;
-}
+h1,
 h2,
 h3 {
   margin-top: 2em;

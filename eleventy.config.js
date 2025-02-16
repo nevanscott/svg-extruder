@@ -40,6 +40,7 @@ export default function (eleventyConfig) {
       input: "website/src/content",
       data: "../data",
       layouts: "../layouts",
+      includes: "../partials",
       output: "website/_site",
     },
   };
